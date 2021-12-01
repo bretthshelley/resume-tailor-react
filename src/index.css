@@ -1,13 +1,256 @@
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font: 14px "Century Gothic", Futura, sans-serif;
+  margin: 20px;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+ol, ul {
+  padding-left: 30px;
+}
+
+.board-row:after {
+  clear: both;
+  content: "";
+  display: table;
+}
+
+.status {
+  margin-bottom: 10px;
+}
+
+.square {
+  background: #fff;
+  border: 1px solid #999;
+  float: left;
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 34px;
+  height: 34px;
+  margin-right: -1px;
+  margin-top: -1px;
+  padding: 0;
+  text-align: center;
+  width: 34px;
+}
+
+.square:focus {
+  outline: none;
+}
+
+.kbd-navigation .square:focus {
+  background: #ddd;
+}
+
+.game {
+  display: flex;
+  flex-direction: row;
+}
+
+.game-info {
+  margin-left: 20px;
+}
+
+.keyword{
+  width: 40ch;
+}
+
+
+.search-replace-line{
+  display: inline-block;
+  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
+  font-size: 1rem;
+  line-height: 16px;
+  padding-top: 10px;
+}
+
+.search-replace-label{
+  width: 100px;
+  display: block;
+}
+
+.indent-span{
+  width: 20px;
+  display: block;
+}
+
+.keyword-styling-line{
+  display: inline-block;
+  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
+  font-size: 1rem;
+  line-height: 16px;
+  padding-top: 0px;
+}
+
+.keyword-styling-label{
+  width: 80px;
+  display: block;
+}
+.remove-bullets-styling-label{
+  width: 260px;
+  display: block;
+}
+
+
+.facet-group-header-text{
+  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
+  font-size: 1rem;
+  font-weight: bold;
+  line-height: 16px;
+  color: #333;
+  cursor: pointer;
+  display: inline-block;
+  padding-top: 20px;
+  max-width: 250px;
+  padding-bottom: 1px;
+}
+
+.facet-group-option{
+  box-sizing: border-box;
+  cursor: pointer;
+  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.5;
+  color: #4d4d4d;
+  padding-top: 5px;
+  max-width: 364px;
+  padding-bottom: 5px;
+}
+
+.exampleSentence{
+  box-sizing: border-box;
+  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.5;
+  color: black;
+  padding-top: 15px;
+  padding-bottom: 5px;
+}
+
+.show-bracket-details{
+  box-sizing: border-box;
+  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.5;
+  color: black;
+  padding-top: -15px;
+  padding-bottom: 5px;
+  padding-left: 20px;
+}
+
+.validation-image{
+  width:20px;
+  height:20px;  
+}
+
+.validation-message{
+  box-sizing: border-box;
+  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.5;
+  color: red;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.example-sentence-indented{
+  box-sizing: border-box;
+  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.5;
+  color: black;
+  padding-top: 15px;
+  padding-bottom: 5px;
+  padding-left: 20px;
+}
+
+.bracketsTrigger{
+  box-sizing: border-box;
+  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.5;
+  color: black;
+}
+
+facet-group-option-inline{
+  float:right;
+}
+
+hr.rounded {
+  border-top: 2px solid #ccc;
+  border-radius: 1px;
+}
+
+.daright {
+  width: '170px'; 
+  text-indent: '50px'; 
+}
+
+.greenHighlight{
+  background-color: green;
+  color: white;
+}
+.yellowHighlight{
+  background-color:yellow;
+  color: black;
+}
+.lightGrayHighlight{
+  background-color:lightgray;
+  color: black;
+}
+.magentaHighlight{
+  background-color:magenta;
+  color: white;
+}
+.redHighlight{
+  background-color:red;
+  color: white;
+}
+.blueHighlight{
+  background-color:blue;
+  color: white;
+}
+.cyanHighlight{
+  background-color:cyan;
+  color: black;
+}
+.darkBlueHighlight{
+  background-color:darkBlue;
+  color: white;
+}
+.darkCyanHighlight{
+  background-color:darkcyan;
+  color: white;
+}
+.darkGrayHighlight{
+  background-color:darkgray;
+  color: white;
+}
+.darkMagentaHighlight{
+  background-color:darkmagenta;
+  color: white;
+}
+.darkRedHighlight{
+  background-color:darkred;
+  color: white;
+}
+.darkYellowHighlight{
+  background-color:#CCCC00;
+  color: black;
+}
+.darkGreenHighlight{
+  background-color:darkgreen;
+  color: white;
+}
+.blackHighlight{
+  background-color:black;
+  color: white;
+}
+.whiteHighlight{
+  background-color:white;
+  color: black;
 }
