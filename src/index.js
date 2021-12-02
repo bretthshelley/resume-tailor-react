@@ -147,6 +147,8 @@ class ResumeTailorForm extends React.Component {
       validationInProgress: false,
       mainRequestBody:'',
       selectedFile: null,
+      uploadError: null, 
+      uploadResponse: null,
     };
 
     
@@ -157,7 +159,9 @@ class ResumeTailorForm extends React.Component {
       this.setState({ selectedFile: e.target.files[0]});
     }
 
-  onFileUpload = () => { 
+  doResumeUpload = () => { 
+    this.setState({uploadError: null, uploadResponse: null})
+    console.log("doResumeUpload");
     const formData = new FormData(); 
    
     formData.append( 
@@ -168,44 +172,32 @@ class ResumeTailorForm extends React.Component {
 
     const mainRequestBody = this.buildMainRequestBody();
     formData.append("json", mainRequestBody);
-   
-
-    // Request made to the backend api 
-    // Send formData object 
-  //  axios.post("api/uploadfile", formData); 
+    console.log("about to do resume upload");
+    axios.post("resume/upload", formData, {
+      /// ... headers are set automagically. You are supposed to have those undefined.
+      // headers: {
+      //   'Content-Type':'multipart/form-data'
+      // }
+    })
+      .then(res => {
+        console.log("Upload Response: " + {res});
+      }).catch(err => {
+        console.error("Upload Error: " + {err});
+        console.log("error status: " +err.response.status);
+        this.setState({uploadError: err})
+      });
   }; 
-
-    // File content to be displayed after 
-    // file upload is complete 
-  fileData = () => { 
-      if (this.state.selectedFile) { 
-        return ( 
-          <div> 
-            <h2>File Details:</h2> 
-          </div> 
-        ); 
-      } else { 
-        return ( 
-          <div> 
-            <br /> 
-            <h4>Choose before Pressing the Upload button</h4> 
-          </div> 
-        ); 
-      } 
-    }; 
-
-    
 
 
   doSubmit(){
+    console.log("doSubmit");
     this.setState({validationInProgress:true});
-    this.validateForm();
-    let mainRequestBody=this.buildMainRequestBody();
-    this.setState({mainRequestBody: mainRequestBody});
-
-    //TODO ensure validation ok, before the on file upload
-
-    this.onFileUpload();
+    
+    if ( this.isInputValid()){
+      let mainRequestBody=this.buildMainRequestBody();
+      this.setState({mainRequestBody: mainRequestBody});
+      this.doResumeUpload();
+    }
 
   }
 
@@ -339,48 +331,54 @@ class ResumeTailorForm extends React.Component {
     return request;
   }
 
-  validateForm(){
+  isInputValid(){
 
-    let errors= [];//this.state.validationErrors.slice();
-
-    
-   
     if ( !this.state.styleKeywords && !this.state.searchReplace && !this.state.removeBullets && !this.state.brackets){
-      errors.push("Missing option(s): Select at least one option (Style Keywords, Find and Replace, Remove Bullets..., Remove Brackets...)");     
+      console.log("no options selected");
+      return false;     
     }
-
+  
     if ( this.state.styleKeywords ){
       if (!this.state.underline && !this.state.italicize && !this.state.boldface && !this.state.highlight)
       {
-        errors.push("Missing style option(s): Select one or more options (italicize,underline,boldface,highlight)");
+        console.log("no styling options selected");
+        return false;
       }
       if ( this.state.keywords.trim()===''){
-        errors.push("Missing keyword(s): Enter at least one keyword to style");
+        console.log("no keywords added");
+        return false;
       }
     }
-
+  
     if ( this.state.searchReplace ){
       if (this.state.search.trim()==='' && this.state.replace.trim()==='' )
       {
-        errors.push("Missing Find and Replace Values: Enter values or deselect 'Find and Replace'");
+        console.log("no search/replace criteria defined");
+        return false;
       }
-      if (this.state.search.trim()==='' && !this.state.replace.trim()==='' ){
-        errors.push("Missing 'Find what' value: Enter a value");
+      if (this.state.search.trim()==='' && this.state.replace.trim()!=='' ){
+        console.log("no search criteria defined to replace");
+         return false;
       }
     }
-    console.log('b. errors len: '+ errors.length);
-   // console.log('selected file as json: ' + JSON.stringify(this.state.selectedFile));
-  
-    // else if (this.state.selectedFile.name.toLowerCase().endsWith(".docx")!==true){
-    //   errors.push("Invalid Resume Format: 'Choose Resume File' in Word .docx format");
-    // }
-    console.log('c. errors len: '+ errors.length);
-
-    errors.forEach( function(s){
-      console.log("error->"+ s);
-    })
-
-    this.setState({validationErrors: errors})
+    let maxSize=6291456;
+    if ( this.state.selectedFile===null ){
+      console.log("no file selected");
+      return false;
+    }
+    else if (this.state.selectedFile.name.toLowerCase().endsWith(".docx")!==true){
+      console.log("selected file not a .docx");
+      return false;
+    }
+    else if ( this.state.selectedFile.type !== wordFileType){
+      console.log("selected file not word document type");
+      return false;
+    }
+    else if ( this.state.selectedFile.size>maxSize){
+      console.log("max file size exceeded");
+      return false;
+    }
+    return true;
   }
 
 
@@ -619,6 +617,11 @@ class ResumeTailorForm extends React.Component {
   render() {
     return (
       <div>
+
+        <UploadErrorsSection
+          uploadError={this.state.uploadError}
+        />
+
         {this.state.validationInProgress?
         <ValidationSection 
           validationErrors={this.state.validationErrors} 
@@ -637,16 +640,13 @@ class ResumeTailorForm extends React.Component {
         />
         :''}
 
-        <p>&nbsp;</p>
+        <div className="facet-group-header-text">Select A Resume</div>
+        <hr className="rounded"/>
        
         
         <div> 
-                <input type="file" onChange={this.onFileChange} /> 
-                <button onClick={this.onFileUpload}> 
-                  Upload! 
-                </button> 
-            </div> 
-          {this.fileData()} 
+          <input type="file" onChange={this.onFileChange} /> 
+        </div> 
 
         <div className="facet-group-header-text">Add Keywords</div>
         <hr className="rounded"/>
@@ -658,7 +658,6 @@ class ResumeTailorForm extends React.Component {
         <div className="facet-group-header-text">Choose Tailoring Options</div>
         <hr className="rounded"/>
        
-
         <KeywordStyleSection 
           styleKeywords={this.state.styleKeywords}
           styleKeywordsChangeHandler={this.handleStyleKeywordsChange.bind(this)}
@@ -776,6 +775,35 @@ class ResumeTailorForm extends React.Component {
       this.setState({boldfaceApproach: approach});
     }
   }
+
+}
+
+function UploadErrorsSection( props){
+  let uploadError= props.uploadError;
+
+  let errors= [];
+
+  if ( uploadError!==null ){
+    let message = "Upload Error occurred with status " + uploadError.response.status ;
+    errors.push(message);
+  }
+
+  let errorHtml='';
+  errors.forEach(
+    function(d){
+      errorHtml += '<img src="./error-icon.png" alt="errors present" className="validation-image"/> ' + d + '<br/>'
+     }
+  )
+
+  return (
+    <Fragment>
+      {errors.length>0?
+    <div className="validation-message">
+      {parse(errorHtml)}
+    </div>
+    :''}
+    </Fragment>
+  )
 
 }
 
