@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import Select from 'react-select';
 import { Fragment } from 'react/cjs/react.production.min';
 import './index.css';
+import axios from 'axios';
 
 
 const keywordsDefaultText='Keyword(s) separated by commas';
@@ -21,6 +22,7 @@ const endAtText='End at:';
 const removeBulletsHint="Explanation: This removes bullet paragraphs without keyword matches. 'Start From' defines the word or phrase where bullet removal begins in the Word document. 'End at' defines the word or phrase where bullet removal ends. 'Keep' words keeps bullets even though they have no matching keywords.";
 const replaceDefaultText='';
 const searchDefaultText='';
+const wordFileType='application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
 
 const highlightColorOptions = [
@@ -90,11 +92,6 @@ const colourStyles = {
   }),
 };
 
-function setValidationErrors( errors ){
-  this.setState( {validationErrors: errors});
-}
-
-
 function HighlightColorSelect(props) {
 
   let highlightColorChangeHandler= props.highlightColorChangeHandler;
@@ -148,16 +145,68 @@ class ResumeTailorForm extends React.Component {
       showBracketDetails: false,
       validationErrors:[],
       validationInProgress: false,
-      mainRequestBody:''
-
+      mainRequestBody:'',
+      selectedFile: null,
     };
+
+    
   }
+
+    onFileChange = e =>{
+      console.log("selected file target: " + String(e.target.files[0]));
+      this.setState({ selectedFile: e.target.files[0]});
+    }
+
+  onFileUpload = () => { 
+    const formData = new FormData(); 
+   
+    formData.append( 
+      "file", 
+      this.state.selectedFile, 
+      this.state.selectedFile.name 
+    ); 
+
+    const mainRequestBody = this.buildMainRequestBody();
+    formData.append("json", mainRequestBody);
+   
+
+    // Request made to the backend api 
+    // Send formData object 
+  //  axios.post("api/uploadfile", formData); 
+  }; 
+
+    // File content to be displayed after 
+    // file upload is complete 
+  fileData = () => { 
+      if (this.state.selectedFile) { 
+        return ( 
+          <div> 
+            <h2>File Details:</h2> 
+          </div> 
+        ); 
+      } else { 
+        return ( 
+          <div> 
+            <br /> 
+            <h4>Choose before Pressing the Upload button</h4> 
+          </div> 
+        ); 
+      } 
+    }; 
+
+    
+
 
   doSubmit(){
     this.setState({validationInProgress:true});
     this.validateForm();
     let mainRequestBody=this.buildMainRequestBody();
     this.setState({mainRequestBody: mainRequestBody});
+
+    //TODO ensure validation ok, before the on file upload
+
+    this.onFileUpload();
+
   }
 
   buildMainRequestBody(){
@@ -290,10 +339,12 @@ class ResumeTailorForm extends React.Component {
     return request;
   }
 
-
   validateForm(){
 
     let errors= [];//this.state.validationErrors.slice();
+
+    
+   
     if ( !this.state.styleKeywords && !this.state.searchReplace && !this.state.removeBullets && !this.state.brackets){
       errors.push("Missing option(s): Select at least one option (Style Keywords, Find and Replace, Remove Bullets..., Remove Brackets...)");     
     }
@@ -317,12 +368,29 @@ class ResumeTailorForm extends React.Component {
         errors.push("Missing 'Find what' value: Enter a value");
       }
     }
+    console.log('b. errors len: '+ errors.length);
+   // console.log('selected file as json: ' + JSON.stringify(this.state.selectedFile));
+  
+    // else if (this.state.selectedFile.name.toLowerCase().endsWith(".docx")!==true){
+    //   errors.push("Invalid Resume Format: 'Choose Resume File' in Word .docx format");
+    // }
+    console.log('c. errors len: '+ errors.length);
+
+    errors.forEach( function(s){
+      console.log("error->"+ s);
+    })
+
     this.setState({validationErrors: errors})
   }
+
 
   handleChange = (selectedOption) => {
     this.setState({ selectedOption });
   };
+
+
+
+
 
   keywordsOnBlurHandler(e){
     let keywords = e.target.value.trim();
@@ -565,12 +633,31 @@ class ResumeTailorForm extends React.Component {
           keywords = {this.state.keywords}
           search = {this.state.search}
           replace = {this.state.replace}
+          selectedFile = {this.state.selectedFile}
         />
         :''}
+
+        <p>&nbsp;</p>
+       
+        
+        <div> 
+                <input type="file" onChange={this.onFileChange} /> 
+                <button onClick={this.onFileUpload}> 
+                  Upload! 
+                </button> 
+            </div> 
+          {this.fileData()} 
+
+        <div className="facet-group-header-text">Add Keywords</div>
+        <hr className="rounded"/>
 
         <KeywordEntry 
           keywordsOnBlurHandler={this.keywordsOnBlurHandler.bind(this)} 
           keywordsOnFocusHandler={this.keywordsOnFocusHandler.bind(this)}/>
+
+        <div className="facet-group-header-text">Choose Tailoring Options</div>
+        <hr className="rounded"/>
+       
 
         <KeywordStyleSection 
           styleKeywords={this.state.styleKeywords}
@@ -591,8 +678,6 @@ class ResumeTailorForm extends React.Component {
         /> 
         {this.state.styleKeywords?<div className="example-sentence-indented">{parse(this.getExampleSentence())}</div>:''} 
 
-        <hr className="rounded"/>
-
         <SearchAndReplaceSection
           searchReplaceOnChangeHandler={this.searchReplaceOnChangeHandler.bind(this)}
           searchOnFocusHandler={this.searchOnFocusHandler.bind(this)}
@@ -603,9 +688,6 @@ class ResumeTailorForm extends React.Component {
           replace={this.state.replace}
           searchReplace={this.state.searchReplace}
         />
-
-        <hr className="rounded"/>
-
 
         <BulletTrimmingSection
           removeBulletsChangeHandler={this.handleDeleteBulletsChange.bind(this)}
@@ -620,16 +702,14 @@ class ResumeTailorForm extends React.Component {
           keepOnFocusHandler={this.keepOnFocusHandler.bind(this)}
           keepOnBlurHandler={this.keepOnBlurHandler.bind(this)}
         />
-        <hr className="rounded"/>
+     
         <BracketSection 
           bracketsChangeHandler={this.handleBracketsChange.bind(this)} 
           bracketsOnClickHandler={this.handleBracketsOnClick.bind(this)}
           showBracketDetails={this.state.showBracketDetails}
           brackets={this.state.brackets}
         />
-        <p>&nbsp;</p>
-        <p><input type="button" onClick={this.doSubmit.bind(this)} value="Submit"/></p>
-        
+         <p><input type="button" onClick={this.doSubmit.bind(this)} value="Submit"/></p>
        
       </div>
     );
@@ -712,6 +792,7 @@ function ValidationSection( props)
   let keywords = props.keywords;
   let search = props.search;
   let replace = props.replace;
+  let selectedFile = props.selectedFile;
 
   let errors= [];//this.state.validationErrors.slice();
   if ( !styleKeywords && !searchReplace && !removeBullets && !brackets){
@@ -738,6 +819,20 @@ function ValidationSection( props)
       errors.push("Missing 'Find what' value: Enter a value");
     }
   }
+  let maxSize=6291456;
+  if ( selectedFile===null ){
+    errors.push("No file selected");
+  }
+  else if (selectedFile.name.toLowerCase().endsWith(".docx")!==true){
+    errors.push("Invalid Resume Format: 'Choose File' in Word .docx format");
+  }
+  else if ( selectedFile.type !== wordFileType){
+    errors.push("Invalid Resume Format: Word .docx format must be of type " + wordFileType);
+  }
+  else if ( selectedFile.size>maxSize){
+    errors.push("Uploaded File cannot be greater than 6 MB");
+  }
+
   let errorHtml='';
   errors.forEach(
     function(d){
@@ -1032,9 +1127,6 @@ function KeywordStyleSection( props){
 
   return (
     <Fragment>
-
-      <div className="facet-group-header-text">Choose Options</div>
-      <hr className="rounded"/>
 
       <div className='facet-group-option' >
         <div className="keyword-styling-line">
