@@ -6,6 +6,8 @@ import { Fragment } from 'react/cjs/react.production.min';
 import './index.css';
 import axios from 'axios';
 import fileDownload from 'js-file-download'
+import Chart from 'react-google-charts'
+
 
 
 const keywordsDefaultText='Keyword(s) separated by commas';
@@ -151,6 +153,9 @@ class ResumeTailorForm extends React.Component {
       uploadError: null, 
       uploadResponse: null,
       outputFilename: null,
+      stats: null,
+      unmatchedKeywords: [],
+      percentageMatch:null,
     };
 
     
@@ -173,7 +178,6 @@ class ResumeTailorForm extends React.Component {
 
   doResumeUpload = () => { 
     this.setState({uploadError: null, uploadResponse: null})
-    console.log("doResumeUpload");
     const formData = new FormData(); 
    
     formData.append( 
@@ -184,7 +188,6 @@ class ResumeTailorForm extends React.Component {
 
     const mainRequestBody = this.buildMainRequestBody();
     formData.append("json", mainRequestBody);
-    console.log("about to do resume upload");
     axios.post("resume/upload", formData, {
       /// ... headers are set automagically. You are supposed to have those undefined.
       // headers: {
@@ -192,13 +195,13 @@ class ResumeTailorForm extends React.Component {
       // }
     })
       .then(res => {
-        console.log("Upload Response: " + {res});
+        console.log('getting percentage match from resonse: ' + res.data.percentageMatch)
 
-        console.log("response details: " + res.data);
-        console.log("response details: " + JSON.stringify(res.data));
-        console.log("output file name: " + res.data.outputFilename);
-
-        this.setState({outputFilename: res.data.outputFilename});
+        this.setState({ outputFilename: res.data.outputFilename, 
+                        unmatchedKeywords: res.data.unmatchedKeywords,
+                        stats: res.data.stats,
+                        percentageMatch: res.data.percentageMatch
+                      });  
 
       }).catch(err => {
         console.error("Upload Error: " + {err});
@@ -633,7 +636,65 @@ class ResumeTailorForm extends React.Component {
     return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
   }
  
+  getChartDataColor( i ){
+    let index = i%10;
+
+    if ( index===0) return 'green';
+    if ( index===1) return 'black';
+    if ( index===2) return 'blue';
+    if ( index===3) return 'orange';
+    if ( index===4) return 'purple';
+    if ( index===5) return 'yellow';
+    if ( index===6) return 'magenta';
+    if ( index===7) return 'gray';
+    if ( index===8) return 'cyan';
+    if ( index===9) return 'red';
+  }
+
+  assembleChartData(){
+    let chartData= [
+      [
+        'Keyword',
+        'Matches Found',
+        { role: 'style' },
+        {
+          sourceColumn: 0,
+          role: 'annotation',
+          type: 'string',
+          calc: 'stringify',
+        },
+      ]
+    ];
+
+    const stats = this.state.stats;
+
+    if ( stats!==null){
+      let i=0;
+
+      Object.entries( stats ).map(([keyword,matches])=>{
+        chartData.push([keyword,matches,this.getChartDataColor(i),null]);
+        i++;
+        return i;
+      })
+
+      let j=0;
+      for ( j=0; j < this.state.unmatchedKeywords.length; j++){
+        let keyword= this.state.unmatchedKeywords[j];
+        chartData.push([keyword,0,this.getChartDataColor((i+j)),null]);
+      }
+     
+    }
+
+   
+
+
+
+    return chartData;
+  }
+
+
   render() {
+
     return (
       <div>
 
@@ -659,16 +720,13 @@ class ResumeTailorForm extends React.Component {
         />
         :''}
 
-        <div className="facet-group-header-text">Select A Resume</div>
+        <div className="facet-group-header-text">Select A Resume and Add Keywords</div>
         <hr className="rounded"/>
        
         
         <div> 
           <input type="file" onChange={this.onFileChange} /> 
         </div> 
-
-        <div className="facet-group-header-text">Add Keywords</div>
-        <hr className="rounded"/>
 
         <KeywordEntry 
           keywordsOnBlurHandler={this.keywordsOnBlurHandler.bind(this)} 
@@ -729,10 +787,16 @@ class ResumeTailorForm extends React.Component {
         />
          <p><input type="button" onClick={this.doSubmit.bind(this)} value="Submit"/></p>
          
-        <div className="facet-group-header-text">Results</div>
+        <div className="facet-group-header-text">Results {this.state.percentageMatch!==null? (' - ' +this.state.percentageMatch + ' Match'): '' }
+        
+        </div>
         <hr className="rounded"/>
         <OutputFileInfo outputFilename={this.state.outputFilename}  handleDownload={this.handleDownload.bind(this)}/>
-
+        {this.state.outputFilename!==null?
+          <ExampleChart chartData={this.assembleChartData()} percentageMatch={this.state.percentageMatch}/>
+          :
+          ''
+        }
       </div>
     );
   }
@@ -812,7 +876,9 @@ function OutputFileInfo(props){
     <div>
       <button onClick={() => {handleDownload(downloadUrl, outputFilename)
       }}>Download Tailored Resume</button>
-
+      <p>
+     
+      </p>
 
     </div>
       :
@@ -821,6 +887,30 @@ function OutputFileInfo(props){
     </Fragment>
   )
 }
+
+function ExampleChart (props) {
+  let chartData = props.chartData;
+  let percentageMatch = props.percentageMatch;
+  console.log('percentage match: ' + percentageMatch);
+  let chartTitle = 'Keyword Search Statistics ('+percentageMatch + ' Match)';
+  console.log('chart title: ' + chartTitle);
+
+  return (
+    <Chart
+    width={'100%'}
+    height={'300px'}
+    chartType="BarChart"
+    loader={<div>Loading Chart</div>}
+    data= {chartData}
+    options={{
+      title: 'Keyword Search Statistics',
+      height: 250,
+      bar: { groupWidth: '95%' },
+      legend: { position: 'none' },
+    }}
+    />
+  );
+};
 
 function UploadErrorsSection( props){
   let uploadError= props.uploadError;
@@ -1265,6 +1355,7 @@ function Approach( props)
     </select>      
   )
 }
+
 
 
 function KeywordEntry (props){
