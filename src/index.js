@@ -5,6 +5,7 @@ import Select from 'react-select';
 import { Fragment } from 'react/cjs/react.production.min';
 import './index.css';
 import axios from 'axios';
+import fileDownload from 'js-file-download'
 
 
 const keywordsDefaultText='Keyword(s) separated by commas';
@@ -149,15 +150,26 @@ class ResumeTailorForm extends React.Component {
       selectedFile: null,
       uploadError: null, 
       uploadResponse: null,
+      outputFilename: null,
     };
 
     
   }
 
-    onFileChange = e =>{
+  handleDownload = (url, filename) => {
+    axios.get(url, {
+      responseType: 'blob',
+    })
+    .then((res) => {
+      fileDownload(res.data, filename)
+    })
+  }
+
+
+  onFileChange = e =>{
       console.log("selected file target: " + String(e.target.files[0]));
       this.setState({ selectedFile: e.target.files[0]});
-    }
+  }
 
   doResumeUpload = () => { 
     this.setState({uploadError: null, uploadResponse: null})
@@ -181,6 +193,13 @@ class ResumeTailorForm extends React.Component {
     })
       .then(res => {
         console.log("Upload Response: " + {res});
+
+        console.log("response details: " + res.data);
+        console.log("response details: " + JSON.stringify(res.data));
+        console.log("output file name: " + res.data.outputFilename);
+
+        this.setState({outputFilename: res.data.outputFilename});
+
       }).catch(err => {
         console.error("Upload Error: " + {err});
         console.log("error status: " +err.response.status);
@@ -709,7 +728,11 @@ class ResumeTailorForm extends React.Component {
           brackets={this.state.brackets}
         />
          <p><input type="button" onClick={this.doSubmit.bind(this)} value="Submit"/></p>
-       
+         
+        <div className="facet-group-header-text">Results</div>
+        <hr className="rounded"/>
+        <OutputFileInfo outputFilename={this.state.outputFilename}  handleDownload={this.handleDownload.bind(this)}/>
+
       </div>
     );
   }
@@ -776,6 +799,27 @@ class ResumeTailorForm extends React.Component {
     }
   }
 
+}
+
+function OutputFileInfo(props){
+  let outputFilename = props.outputFilename;
+  let handleDownload = props.handleDownload;
+  let downloadUrl = './resume/download?filename='+outputFilename;
+
+  return (
+    <Fragment>
+      {outputFilename!==null?
+    <div>
+      <button onClick={() => {handleDownload(downloadUrl, outputFilename)
+      }}>Download Tailored Resume</button>
+
+
+    </div>
+      :
+      ''
+      }
+    </Fragment>
+  )
 }
 
 function UploadErrorsSection( props){
