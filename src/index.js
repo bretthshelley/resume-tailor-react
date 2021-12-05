@@ -10,7 +10,7 @@ import Chart from 'react-google-charts'
 
 
 
-const keywordsDefaultText='Keyword(s) separated by commas';
+const keywordsDefaultText='Keywords separated by commas';
 const startFromDefaultText='Optional word or phrase';
 const endAtDefaultText='Optional word or phrase';
 const keepDefaultText='Optional words or phrases separated by commas';
@@ -187,6 +187,9 @@ class ResumeTailorForm extends React.Component {
     ); 
 
     const mainRequestBody = this.buildMainRequestBody();
+
+    console.log("mainRequestBody:" + mainRequestBody);
+
     formData.append("json", mainRequestBody);
     axios.post("resume/upload", formData, {
       /// ... headers are set automagically. You are supposed to have those undefined.
@@ -227,30 +230,40 @@ class ResumeTailorForm extends React.Component {
     let body='{'
 
     let keywordStyleRequest= this.buildKeywordStyleRequest();
+    console.log("keywordStyleRequest:" + keywordStyleRequest);
     body+=keywordStyleRequest;
+    console.log("body:" + body);
     
     let searchAndReplaceRequest= this.buildSearchAndReplaceRequest();
+    console.log("searchAndReplaceRequest:" + searchAndReplaceRequest);
     if ( body!=='{'){
       body+=',';
     }
     body+=searchAndReplaceRequest;
+    console.log("body:" + body);
 
     let trimBulletsRequest = this.buildTrimBulletsRequest();
     if ( body!=='{' && body.endsWith(',')!==true){
       body+=',';
     }
     body+=trimBulletsRequest;
+    console.log("body:" + body);
 
     if ( body!=='{' && body.endsWith(',')!==true){
       body+=',';
     }
     body+='"removeKeywordlessBullets":'+this.state.removeBullets;
+    console.log("body:" + body);
+
     if ( body!=='{' && body.endsWith(',')!==true){
       body+=',';
     }
     body+='"removeBracketedStrings":'+this.state.brackets;
+    console.log("body:" + body);
 
     body+='}'
+
+    console.log("main request body:" + body);
     return body;
   }
 
@@ -720,19 +733,21 @@ class ResumeTailorForm extends React.Component {
         />
         :''}
 
-        <div className="facet-group-header-text">Select A Resume and Add Keywords</div>
-        <hr className="rounded"/>
        
-        
-        <div> 
-          <input type="file" onChange={this.onFileChange} /> 
-        </div> 
+        <div>
+          <div className="search-replace-line">
+          <span className="select-resume-label">Select a Resume</span>
+          </div>
+          <div className="search-replace-line">
+            <input type="file" onChange={this.onFileChange} className="cust-button" />
+          </div>
+        </div>
 
         <KeywordEntry 
           keywordsOnBlurHandler={this.keywordsOnBlurHandler.bind(this)} 
           keywordsOnFocusHandler={this.keywordsOnFocusHandler.bind(this)}/>
 
-        <div className="facet-group-header-text">Choose Tailoring Options</div>
+        <div className="facet-group-header-text">Choose Options and Generate Resume</div>
         <hr className="rounded"/>
        
         <KeywordStyleSection 
@@ -785,18 +800,15 @@ class ResumeTailorForm extends React.Component {
           showBracketDetails={this.state.showBracketDetails}
           brackets={this.state.brackets}
         />
-         <p><input type="button" onClick={this.doSubmit.bind(this)} value="Submit"/></p>
+         <p><input type="button" onClick={this.doSubmit.bind(this)} value="Generate Tailored Resume" className="cust-button"/></p>
          
-        <div className="facet-group-header-text">Results {this.state.percentageMatch!==null? (' - ' +this.state.percentageMatch + ' Match'): '' }
+
+        <OutputFileInfo outputFilename={this.state.outputFilename}  
+                        handleDownload={this.handleDownload.bind(this)}
+                        percentageMatch={this.state.percentageMatch}
+                        chartData={this.assembleChartData()}/>
         
-        </div>
-        <hr className="rounded"/>
-        <OutputFileInfo outputFilename={this.state.outputFilename}  handleDownload={this.handleDownload.bind(this)}/>
-        {this.state.outputFilename!==null?
-          <ExampleChart chartData={this.assembleChartData()} percentageMatch={this.state.percentageMatch}/>
-          :
-          ''
-        }
+        
       </div>
     );
   }
@@ -868,22 +880,30 @@ class ResumeTailorForm extends React.Component {
 function OutputFileInfo(props){
   let outputFilename = props.outputFilename;
   let handleDownload = props.handleDownload;
+  let percentageMatch = props.percentageMatch;
+  let chartData = props.chartData;
   let downloadUrl = './resume/download?filename='+outputFilename;
 
   return (
     <Fragment>
+
+        <div className="facet-group-header-text">
+          Results {percentageMatch!==null? (' - ' +percentageMatch + ' Match'): '' }      
+        </div>
+        <hr className="rounded"/>
+
+
       {outputFilename!==null?
     <div>
-      <button onClick={() => {handleDownload(downloadUrl, outputFilename)
-      }}>Download Tailored Resume</button>
+      <button onClick={() => {handleDownload(downloadUrl, outputFilename)}} className="cust-button">Download {outputFilename}</button>
       <p>
-     
+      <ExampleChart chartData={chartData} percentageMatch={percentageMatch}/>
       </p>
-
     </div>
       :
       ''
       }
+
     </Fragment>
   )
 }
@@ -1053,7 +1073,7 @@ function BracketDetails(props){
   {showBracketDetails?
     
     <div className="show-bracket-details">
-    <input type="button" value="Hide Explanation..." id="hideBracketDetails" onClick={(e)=>bracketsOnClickHandler(e)}/>
+    <input type="button" value="Hide Explanation..." id="hideBracketDetails" onClick={(e)=>bracketsOnClickHandler(e)} className="cust-button"/>
     <p>'Removing Brackets' hides the rapid customization magic from those who view the document.
       'Remove Brackets' removes the texts inside brackets so you may use keyword matching without showing the keyword. 
       <br/> For example, imagine the following bullets in a resume:
@@ -1076,7 +1096,7 @@ function BracketDetails(props){
 
   :
   <div className="search-replace-line">
-    <input type="button" value="Show Explanation..." id="showBracketDetails" onClick={(e)=>bracketsOnClickHandler(e)}/>
+    <input type="button" value="Show Explanation..." id="showBracketDetails" onClick={(e)=>bracketsOnClickHandler(e)} className="cust-button"/>
   </div>
   }
   </Fragment>
@@ -1371,7 +1391,7 @@ function KeywordEntry (props){
   return(
     <div>
       <div className="search-replace-line">
-        <span className="search-replace-label">Keywords</span>
+        <span className="add-keywords-label">Add Keywords</span>
       </div>
       <div className="search-replace-line">
         <input type="text" 

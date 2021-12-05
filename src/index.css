@@ -51,8 +51,12 @@ ol, ul {
 
 .keyword{
   width: 40ch;
+  font-size: 1rem;
 }
 
+.cust-button{
+  font-size: 1rem;
+}
 
 .search-replace-line{
   display: inline-block;
@@ -64,6 +68,16 @@ ol, ul {
 
 .search-replace-label{
   width: 100px;
+  display: block;
+}
+
+.select-resume-label{
+  width: 140px;
+  display: inline-block;
+}
+
+.add-keywords-label{
+  width: 140px;
   display: block;
 }
 
@@ -254,3 +268,58 @@ hr.rounded {
   background-color:white;
   color: black;
 }
+
+
+.icl-TextInput{
+  border: 1px solid #949494;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+
+}
+
+.ics-TextInput-labelWrapper{
+  margin: 0 1rem 0 0;
+  line-height: 1.125rem;
+  white-space: nowrap;
+  word-break: keep-all;
+
+  box-sizing: border-box;
+
+  font-family: Arial, Helvetica, sans-serif !important;
+
+  display: block;
+
+}
+
+.ics-TextInput-label{
+  box-sizing: border-box;
+  color: #454545;
+  cursor: default;
+  display: block;
+  font-family: "Noto Sans", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  height: 18px;
+  white-space: nowrap;
+  word-break: keep-all;
+  letter-spacing: normal;
+  
+
+}
+
+.ics-TextInput-control{
+  border:none;
+  padding: 0 1.5rem 0 0;
+  font-size: 0.875rem;
+  letter-spacing: 0;
+  font-weight: 400;
+  line-height: 1.125rem;
+  border-top-style: hidden;
+  border-right-style: hidden;
+  border-left-style: hidden;
+  border-bottom-style: hidden;
+}
+
+
