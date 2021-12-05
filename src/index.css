@@ -86,6 +86,8 @@ ol, ul {
   display: block;
 }
 
+
+
 .keyword-styling-line{
   display: inline-block;
   font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
@@ -98,9 +100,18 @@ ol, ul {
   width: 80px;
   display: block;
 }
+
+.find-replace-styling-label{
+  width: 260px;
+  display: inline-block;
+  width: max-content;
+  
+}
+
 .remove-bullets-styling-label{
   width: 260px;
-  display: block;
+  display: inline-block;
+  width: max-content;
 }
 
 
@@ -127,6 +138,21 @@ ol, ul {
   color: #4d4d4d;
   padding-top: 5px;
   max-width: 364px;
+  padding-bottom: 5px;
+}
+
+.tooltipDiv{
+  padding-left: 10px;
+
+}
+
+.tooltipSentence{
+  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.5;
+  color: black;
+  padding-top: 15px;
   padding-bottom: 5px;
 }
 
@@ -270,56 +296,36 @@ hr.rounded {
 }
 
 
-.icl-TextInput{
-  border: 1px solid #949494;
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  padding: 0.75rem 1rem;
-
+.modal {
+  font-size: 12px;
 }
-
-.ics-TextInput-labelWrapper{
-  margin: 0 1rem 0 0;
-  line-height: 1.125rem;
-  white-space: nowrap;
-  word-break: keep-all;
-
-  box-sizing: border-box;
-
-  font-family: Arial, Helvetica, sans-serif !important;
-
+.modal > .header {
+  width: 100%;
+  border-bottom: 1px solid gray;
+  font-size: 18px;
+  text-align: center;
+  padding: 5px;
+}
+.modal > .content {
+  width: 100%;
+  padding: 10px 5px;
+}
+.modal > .actions {
+  width: 100%;
+  padding: 10px 5px;
+  margin: auto;
+  text-align: center;
+}
+.modal > .close {
+  cursor: pointer;
+  position: absolute;
   display: block;
-
+  padding: 2px 5px;
+  line-height: 20px;
+  right: -10px;
+  top: -10px;
+  font-size: 24px;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #cfcece;
 }
-
-.ics-TextInput-label{
-  box-sizing: border-box;
-  color: #454545;
-  cursor: default;
-  display: block;
-  font-family: "Noto Sans", "Helvetica Neue", Arial, Helvetica, sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  height: 18px;
-  white-space: nowrap;
-  word-break: keep-all;
-  letter-spacing: normal;
-  
-
-}
-
-.ics-TextInput-control{
-  border:none;
-  padding: 0 1.5rem 0 0;
-  font-size: 0.875rem;
-  letter-spacing: 0;
-  font-weight: 400;
-  line-height: 1.125rem;
-  border-top-style: hidden;
-  border-right-style: hidden;
-  border-left-style: hidden;
-  border-bottom-style: hidden;
-}
-
-

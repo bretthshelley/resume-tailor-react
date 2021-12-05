@@ -1,5 +1,5 @@
 import parse from 'html-react-parser';
-import React from 'react';
+import React, {useState} from 'react';
 import ReactDOM from 'react-dom';
 import Select from 'react-select';
 import { Fragment } from 'react/cjs/react.production.min';
@@ -7,7 +7,35 @@ import './index.css';
 import axios from 'axios';
 import fileDownload from 'js-file-download'
 import Chart from 'react-google-charts'
+import Popup from 'reactjs-popup';
+import 'reactjs-popup/dist/index.css';
 
+
+
+const InfoPopup = (props) => {
+  const [open, setOpen] = useState(false);
+  const closeModal = () => setOpen(false);
+  const tooltip = props.tooltip;
+  return (
+    <div className="tooltipDiv">
+
+      <svg onClick={() => setOpen(o => !o)}
+            width="14" height="16" viewBox="0 0 14 16">
+        <path fillRule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z">
+        </path>
+      </svg>
+
+      <Popup open={open} closeOnDocumentClick onClose={closeModal} arrow="true" position="right center">
+        <div className="modal">
+          <a className="close" onClick={closeModal}>
+            &times;
+          </a>
+          <span className="tooltipSentence">{parse(tooltip)}</span>
+        </div>
+      </Popup>
+    </div>
+  );
+};
 
 
 const keywordsDefaultText='Keywords separated by commas';
@@ -19,13 +47,25 @@ const italicizeText='Italicize';
 const highlightText='Highlight';
 const boldfaceText='Boldface';
 const keepText="Keep:";
-const findReplaceHint="Hint: You might replace the words 'Resume Title' with the Job Title you are applying for.";
+const findReplaceTooltip="<b>Find and Replace Hint</b>: You might replace the words <i>'Resume Title'</i> with the Job Title you are applying for.";
 const startFromText='Start from:';
 const endAtText='End at:';
-const removeBulletsHint="Explanation: This removes bullet paragraphs without keyword matches. 'Start From' defines the word or phrase where bullet removal begins in the Word document. 'End at' defines the word or phrase where bullet removal ends. 'Keep' words keeps bullets even though they have no matching keywords.";
+const removeBulletsTooltip="<b>Remove Bullets without Keywords Explanation</b>: This removes bullet paragraphs without keyword matches. 'Start From' defines the word or phrase where bullet removal begins in the Word document. 'End at' defines the word or phrase where bullet removal ends. 'Keep' words keeps bullets even though they have no matching keywords.";
 const replaceDefaultText='';
 const searchDefaultText='';
 const wordFileType='application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+const removeBracketsTooltip="<p>'Removing Brackets' results in the following:"
++"<ul>"
++"<li>Before: Filled in as the Team's Database administrator [#Oracle,#DBA,#keepme,#leadership].</li>"
++"<li>After: Filled in as the Team's Database administrator.</li>"
++"</ul>"
++"This enables you to hide the keywords you are focused on by placing them in brackets. "
++"Imagine a resume with 20 bullets. And you want to only keep the six bullets with '#leadership' in brackets. "
++"Selecting both 'Remove Bullets without keywords' and 'Remove Brackets', then adding '#leadership' as a keyword enables this. "+
+"And if you always want to show a bulleted paragraph, then adding a 'Keep' marker like '#keepme' makes it happen. </p>"
++"<p>This feature ultimately can transform a big generic resume into a smaller resume focused on a job requirement. </p>";
+
 
 
 const highlightColorOptions = [
@@ -794,14 +834,10 @@ class ResumeTailorForm extends React.Component {
           keepOnBlurHandler={this.keepOnBlurHandler.bind(this)}
         />
      
-        <BracketSection 
-          bracketsChangeHandler={this.handleBracketsChange.bind(this)} 
-          bracketsOnClickHandler={this.handleBracketsOnClick.bind(this)}
-          showBracketDetails={this.state.showBracketDetails}
-          brackets={this.state.brackets}
+        <BracketSection bracketsChangeHandler={this.handleBracketsChange.bind(this)} 
         />
          <p><input type="button" onClick={this.doSubmit.bind(this)} value="Generate Tailored Resume" className="cust-button"/></p>
-         
+
 
         <OutputFileInfo outputFilename={this.state.outputFilename}  
                         handleDownload={this.handleDownload.bind(this)}
@@ -822,11 +858,6 @@ class ResumeTailorForm extends React.Component {
   handleStyleKeywordsChange(e){ this.setState({ styleKeywords: e.target.checked, }); }
 
   handleBracketsChange(e){ this.setState({ brackets: e.target.checked }) }
-
-  handleBracketsOnClick(e){ 
-    this.setState({showBracketDetails: !this.state.showBracketDetails})
-  }
-
 
   handleStylingChange(e) { 
 
@@ -1038,9 +1069,6 @@ function ValidationSection( props)
 function BracketSection(props){
 
   let bracketsChangeHandler=props.bracketsChangeHandler;
-  let bracketsOnClickHandler=props.bracketsOnClickHandler;
-  let showBracketDetails=props.showBracketDetails;
-  let brackets=props.brackets;
 
   return(
     <div>
@@ -1051,57 +1079,14 @@ function BracketSection(props){
         <div className="keyword-styling-line">
           <span className="remove-bullets-styling-label">Remove Brackets (Advanced)</span>
         </div>
+        <div className="keyword-styling-line">
+          <InfoPopup tooltip={removeBracketsTooltip}/>
+        </div> 
       </div>
       <div className="search-replace-line"><span className="indent-span"></span></div>
-      {brackets? <BracketDetails showBracketDetails={showBracketDetails} bracketsOnClickHandler={bracketsOnClickHandler}/>:''}
     </div>
 
   );
-}
-
-
-
-
-
-function BracketDetails(props){
-  let bracketsOnClickHandler=props.bracketsOnClickHandler;
-  let showBracketDetails=props.showBracketDetails;
-
-  return (
-    <Fragment>
-
-  {showBracketDetails?
-    
-    <div className="show-bracket-details">
-    <input type="button" value="Hide Explanation..." id="hideBracketDetails" onClick={(e)=>bracketsOnClickHandler(e)} className="cust-button"/>
-    <p>'Removing Brackets' hides the rapid customization magic from those who view the document.
-      'Remove Brackets' removes the texts inside brackets so you may use keyword matching without showing the keyword. 
-      <br/> For example, imagine the following bullets in a resume:
-      <ul>
-        <li>Filled in as the Team's Database administrator [#Oracle,#DBA,#keepme,#leadership].</li>
-      </ul>
-      Selecting 'Remove Brackets' results in the following modified bullets. 
-      <ul>
-        <li>Filled in as the Team's Database administrator.</li>
-      </ul>
-      This advanced capability enables you to rapidly trim down a 'big' resume to match a specific job requirement. 
-      Imagine a resume with 20 bullets. And you want to only keep the six bullets with '#leadership' in brackets.  
-      Selecting both 'Remove Bullets without keywords' and 'Remove Brackets', then adding '#leadership' as a 'Keep' word allows you to do this.
-      And if you always want to show a bulleted paragraph, then adding a 'Keep' marker like '#keepme' enables this.   
-    </p>
-    <p>Using this feature takes a bit of thought and preparation.  But if you want to produce a resume that is exactly focused on a job requirement, 
-      then this feature is extremely powerful. 
-    </p>
-    </div>
-
-  :
-  <div className="search-replace-line">
-    <input type="button" value="Show Explanation..." id="showBracketDetails" onClick={(e)=>bracketsOnClickHandler(e)} className="cust-button"/>
-  </div>
-  }
-  </Fragment>
-  );
-
 }
 
 
@@ -1130,12 +1115,14 @@ function BulletTrimmingSection(props){
         <div className="keyword-styling-line">
           <span className="remove-bullets-styling-label">Remove Bullets without keywords</span>
         </div>
+        <div className="keyword-styling-line">
+          <InfoPopup tooltip={removeBulletsTooltip}/>
+        </div>        
       </div>
       <div>
         <OptionalTextLine show={removeBullets} onFocusHandler={startFromOnFocusHandler} onBlurHandler={startFromOnBlurHandler} labelText={startFromText} defaultValue={startFrom===''?startFromDefaultText:startFrom} />
         <OptionalTextLine show={removeBullets} onFocusHandler={endAtOnFocusHandler} onBlurHandler={endAtOnBlurHandler} labelText={endAtText} defaultValue={endAt===''?endAtDefaultText:endAt} /> 
         <OptionalTextLine show={removeBullets} onFocusHandler={keepOnFocusHandler} onBlurHandler={keepOnBlurHandler} labelText={keepText} defaultValue={keep===''?keepDefaultText:keep} /> 
-        {removeBullets?<div className="example-sentence-indented">{removeBulletsHint}</div>:''}
       </div>
     </div>
   );
@@ -1194,13 +1181,15 @@ function SearchAndReplaceSection( props){
             <input type='checkbox' id='searchReplaceCheckbox' onChange={(e)=>searchReplaceOnChangeHandler(e)}/>
         </div>
         <div className="keyword-styling-line">
-          <span className="remove-bullets-styling-label">Find and Replace</span>
+          <span className="find-replace-styling-label">Find and Replace</span>
+        </div>
+        <div className="keyword-styling-line">
+          <InfoPopup tooltip={findReplaceTooltip}/>
         </div>
       </div>
       <div>
         <OptionalTextLine show={searchReplace} onFocusHandler={searchOnFocusHandler} onBlurHandler={searchOnBlurHandler} labelText='Find what:' defaultValue={search}/>
         <OptionalTextLine show={searchReplace} onFocusHandler={replaceOnFocusHandler} onBlurHandler={replaceOnBlurHandler} labelText='Replace with:' defaultValue={replace}/> 
-        {searchReplace?<div className="example-sentence-indented">{findReplaceHint}</div>:''}
       </div>
     </div>
   )
