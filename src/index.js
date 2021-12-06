@@ -11,6 +11,8 @@ import Popup from 'reactjs-popup';
 import 'reactjs-popup/dist/index.css';
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 import Loader from 'react-loader-spinner';
+import moment from "moment";
+
 
 const InfoPopup = (props) => {
   const [open, setOpen] = useState(false);
@@ -47,12 +49,13 @@ const italicizeText='Italicize';
 const highlightText='Highlight';
 const boldfaceText='Boldface';
 const keepText="Keep:";
-const findReplaceTooltip="<b>Find and Replace Hint</b>: You might replace the words <i>'Resume Title'</i> with the Job Title you are applying for.";
 const startFromText='Start from:';
 const endAtText='End at:';
-const removeBulletsTooltip="<b>Remove Bullets without Keywords Explanation</b>: This removes bullet paragraphs without keyword matches. 'Start From' defines the word or phrase where bullet removal begins in the Word document. 'End at' defines the word or phrase where bullet removal ends. 'Keep' words keeps bullets even though they have no matching keywords.";
 const replaceDefaultText='';
 const searchDefaultText='';
+const removeBulletsTooltip="<b>Remove Bullets without Keywords Explanation</b>: This removes bullet paragraphs without keyword matches. 'Start From' defines the word or phrase where bullet removal begins in the Word document. 'End at' defines the word or phrase where bullet removal ends. 'Keep' words keeps bullets even though they have no matching keywords.";
+const findReplaceTooltip="<b>Find and Replace Hint</b>: You might replace the words <i>'Resume Title'</i> with the Job Title you are applying for.";
+const selectResumeTooltip='<b>Select a Resume Details</b>: Select a resume in MS Word *.docx format.';
 const wordFileType='application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 const keywordStylingTooltip="<b>Style Keywords Hint</b>: Select the <i>Italics</i>, <i>Boldface</i>, <i>Highlight</i>, <i>Underline</i> checkboxes to see the effect on the Example Sentence. "
 +"Also try out the <i>Keywords</i> and <i>Sentences with Keywords</i> drop down values.  "
@@ -166,7 +169,8 @@ class ResumeTailorForm extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      keywords:'',
+      keywords:null,
+      keywordArray:[],
       styleKeywords: true,
       underline: false,
       underlineApproach: 'keyword',
@@ -216,8 +220,17 @@ class ResumeTailorForm extends React.Component {
 
 
   onFileChange = e =>{
-      console.log("selected file target: " + String(e.target.files[0]));
-      this.setState({ selectedFile: e.target.files[0]});
+
+      if ( e.target!==undefined && e.target!==null && e.target.files[0]!==null && e.target.files[0]!==undefined)
+      {
+        console.log("selected file target: " + e.target.files[0].name);
+        this.setState({ selectedFile: e.target.files[0]});
+      }
+      else{
+        console.log("selected file : null");
+        this.setState({ selectedFile: null});
+      }
+     
   }
 
   doResumeUpload = () => { 
@@ -392,6 +405,7 @@ class ResumeTailorForm extends React.Component {
         }        
        }
     )
+    this.setState({keywordArray: keywordArray});
     return JSON.stringify(keywordArray);
   }
 
@@ -473,20 +487,20 @@ class ResumeTailorForm extends React.Component {
   };
 
 
-
-
-
   keywordsOnBlurHandler(e){
-    let keywords = e.target.value.trim();
-    if ( keywords===keywordsDefaultText)
+    let keywordsEntered = e.target.value.trim();
+    console.log("onBlur: keywords are now: " + keywordsEntered);
+    if ( keywordsEntered===keywordsDefaultText)
     {
-      keywords='';
+      keywordsEntered='';
     }
-    if ( keywords===''){
+    if ( keywordsEntered===''){
       e.target.value=keywordsDefaultText;
     }
+
+
     this.setState({
-      keywords: keywords,
+      keywords: keywordsEntered,
     })
   }
 
@@ -715,6 +729,8 @@ class ResumeTailorForm extends React.Component {
     if ( index===9) return 'red';
   }
 
+  
+
   assembleChartData(){
     const stats = this.state.stats;
     let chartData= [
@@ -784,83 +800,103 @@ class ResumeTailorForm extends React.Component {
         />
         :''}
 
-       
-        <div>
-          <div className="search-replace-line">
-          <span className="select-resume-label">Select a Resume</span>
-          </div>
-          <div className="search-replace-line">
-            <input type="file" onChange={this.onFileChange} className="cust-button" />
-          </div>
-        </div>
 
-        <KeywordEntry 
-          keywordsOnBlurHandler={this.keywordsOnBlurHandler.bind(this)} 
-          keywordsOnFocusHandler={this.keywordsOnFocusHandler.bind(this)}/>
+        {this.state.generationComplete!==true? <SectionHeader text="Resume Tailor Setup"/>:''}
 
-        <div className="facet-group-header-text">Choose Options and Generate Resume</div>
-        <hr className="rounded"/>
-       
-        <KeywordStyleSection 
-          styleKeywords={this.state.styleKeywords}
-          styleKeywordsChangeHandler={this.handleStyleKeywordsChange.bind(this)}
-          changeHandler={this.handleStylingChange.bind(this)} 
-          approachHandler={this.handleApproach.bind(this)}
-          highlight={this.state.highlight}
-          highlightColor={this.state.highlightColor}
-          highlightColorLabel={this.state.highlightColorLabel}
-          highlightColorChangeHandler = { this.handleHighlightColorChange.bind(this)}
-          italicizeApproach={ this.state.italicizeApproach}
-          underlineApproach={ this.state.underlineApproach}
-          boldfaceApproach={this.state.boldfaceApproach}
-          highlightApproach={this.state.highlightApproach}
-          underline={this.state.underline}
-          italicize={this.state.italicize}
-          boldface={this.state.boldface}
-        /> 
-        <ExampleSentence styleKeywords={this.state.styleKeywords} getExampleSentence={this.getExampleSentence.bind(this)} />
-       
+        {this.state.generationComplete!==true?
+          <SelectResumeSection onFileChange={this.onFileChange.bind(this)} 
+              selectedFile={this.state.selectedFile}/>
+        :''}
 
-        <SearchAndReplaceSection
-          searchReplaceOnChangeHandler={this.searchReplaceOnChangeHandler.bind(this)}
-          searchOnFocusHandler={this.searchOnFocusHandler.bind(this)}
-          searchOnBlurHandler={this.searchOnBlurHandler.bind(this)}
-          replaceOnFocusHandler={this.replaceOnFocusHandler.bind(this)}
-          replaceOnBlurHandler={this.replaceOnBlurHandler.bind(this)}
-          search={this.state.search}
-          replace={this.state.replace}
-          searchReplace={this.state.searchReplace}
-        />
+        {this.state.generationComplete!==true?
+          <KeywordEntry 
+            keywords={this.state.keywords}
+            keywordsOnBlurHandler={this.keywordsOnBlurHandler.bind(this)} 
+            keywordsOnFocusHandler={this.keywordsOnFocusHandler.bind(this)}/>
+        :''}
 
-        <BulletTrimmingSection
-          removeBulletsChangeHandler={this.handleDeleteBulletsChange.bind(this)}
-          removeBullets={this.state.removeBullets}
-          startFrom={this.state.startFrom}
-          endAt={this.state.endAt}
-          keep={this.state.keep}
-          startFromOnFocusHandler={this.startFromOnFocusHandler.bind(this)}
-          startFromOnBlurHandler={this.startFromOnBlurHandler.bind(this)}
-          endAtOnFocusHandler={this.endAtOnFocusHandler.bind(this)}
-          endAtOnBlurHandler={this.endAtOnBlurHandler.bind(this)}
-          keepOnFocusHandler={this.keepOnFocusHandler.bind(this)}
-          keepOnBlurHandler={this.keepOnBlurHandler.bind(this)}
-        />
-     
-        <BracketSection bracketsChangeHandler={this.handleBracketsChange.bind(this)} 
-        />
-        <GenerateSection loaderVisible={this.state.loaderVisible} 
-          doSubmit={this.doSubmit.bind(this)} 
-          generationComplete={this.state.generationComplete}/>
+        {this.state.generationComplete!==true?
+          <SectionHeader text="Choose Options and Generate Resume"/>
+        :''}
+
+        {this.state.generationComplete!==true?
+          <KeywordStyleSection 
+            styleKeywords={this.state.styleKeywords}
+            styleKeywordsChangeHandler={this.handleStyleKeywordsChange.bind(this)}
+            changeHandler={this.handleStylingChange.bind(this)} 
+            approachHandler={this.handleApproach.bind(this)}
+            highlight={this.state.highlight}
+            highlightColor={this.state.highlightColor}
+            highlightColorLabel={this.state.highlightColorLabel}
+            highlightColorChangeHandler = { this.handleHighlightColorChange.bind(this)}
+            italicizeApproach={ this.state.italicizeApproach}
+            underlineApproach={ this.state.underlineApproach}
+            boldfaceApproach={this.state.boldfaceApproach}
+            highlightApproach={this.state.highlightApproach}
+            underline={this.state.underline}
+            italicize={this.state.italicize}
+            boldface={this.state.boldface}
+          /> 
+        :''}
+
+        {this.state.generationComplete!==true?
+          <ExampleSentence styleKeywords={this.state.styleKeywords} getExampleSentence={this.getExampleSentence.bind(this)} />
+        :''}
+
+        {this.state.generationComplete!==true?
+          <SearchAndReplaceSection
+            searchReplaceOnChangeHandler={this.searchReplaceOnChangeHandler.bind(this)}
+            searchOnFocusHandler={this.searchOnFocusHandler.bind(this)}
+            searchOnBlurHandler={this.searchOnBlurHandler.bind(this)}
+            replaceOnFocusHandler={this.replaceOnFocusHandler.bind(this)}
+            replaceOnBlurHandler={this.replaceOnBlurHandler.bind(this)}
+            search={this.state.search}
+            replace={this.state.replace}
+            searchReplace={this.state.searchReplace}
+          />
+        :''}
+
+        {this.state.generationComplete!==true?
+          <BulletTrimmingSection
+            removeBulletsChangeHandler={this.handleDeleteBulletsChange.bind(this)}
+            removeBullets={this.state.removeBullets}
+            startFrom={this.state.startFrom}
+            endAt={this.state.endAt}
+            keep={this.state.keep}
+            startFromOnFocusHandler={this.startFromOnFocusHandler.bind(this)}
+            startFromOnBlurHandler={this.startFromOnBlurHandler.bind(this)}
+            endAtOnFocusHandler={this.endAtOnFocusHandler.bind(this)}
+            endAtOnBlurHandler={this.endAtOnBlurHandler.bind(this)}
+            keepOnFocusHandler={this.keepOnFocusHandler.bind(this)}
+            keepOnBlurHandler={this.keepOnBlurHandler.bind(this)}
+          />
+        :''}
+
+        {this.state.generationComplete!==true?
+          <BracketSection bracketsChangeHandler={this.handleBracketsChange.bind(this)} />
+        :''}
+
+        {this.state.generationComplete!==true?  
+          <GenerateSection loaderVisible={this.state.loaderVisible} 
+            doSubmit={this.doSubmit.bind(this)} 
+            generationComplete={this.state.generationComplete}/>
+        :''}
+
         
         <ResetButton   
           doReset={this.doReset.bind(this)}
           generationComplete={this.state.generationComplete}/>  
 
-        <ResultsSection outputFilename={this.state.outputFilename}  
-                        handleDownload={this.handleDownload.bind(this)}
-                        percentageMatch={this.state.percentageMatch}
-                        chartData={this.assembleChartData()}/>
-                      
+        {this.state.generationComplete?
+          <ResultsSection outputFilename={this.state.outputFilename}
+                          filename={this.state.selectedFile.name}  
+                          handleDownload={this.handleDownload.bind(this)}
+                          percentageMatch={this.state.percentageMatch}
+                          chartData={this.assembleChartData()}
+                          keywordArray={this.state.keywordArray}
+                          stats= {this.state.stats}
+                          unmatchedKeywords={this.state.unmatchedKeywords}/>
+        :''}
       </div>
     );
   }
@@ -924,6 +960,57 @@ class ResumeTailorForm extends React.Component {
 
 }
 
+function SectionHeader(props){
+  const text= props.text;
+
+  return (
+    <Fragment>
+      <div className="facet-group-header-text">{text}</div>
+      <hr className="rounded"/>
+    </Fragment>
+  )
+
+}
+
+function SelectResumeSection(props){
+  let onFileChange= props.onFileChange;
+  let selectedFile = props.selectedFile;
+  
+  const hiddenFileInput = React.useRef(null);
+
+  const handleClick = event => {
+    hiddenFileInput.current.click();
+  };
+
+  return (
+    <div>
+      <div className="search-replace-line">
+      <span className="select-resume-label">Select a Resume</span>
+      </div>
+      <div className="search-replace-line">
+        <input type="button" onClick={handleClick} value="Upload in .docx format" className="cust-button"/>
+        <input type="file" ref={hiddenFileInput} onChange={onFileChange} className="cust-button" style={{display: 'none'}} />
+      </div>
+      <SelectedFile selectedFile={selectedFile}/>
+      
+    </div>
+  )
+}
+
+function SelectedFile( props){
+  let selectedFile = props.selectedFile;
+
+  console.log("Selected File: " + selectedFile);
+
+  return (
+    <div className="search-replace-line">
+      <span>&nbsp;&nbsp;{selectedFile!==null && selectedFile!==undefined? selectedFile.name:'No file selected'}</span>
+    </div>
+  )
+
+}
+
+
 function ExampleSentence(props){
   let styleKeywords= props.styleKeywords;
   let getExampleSentence= props.getExampleSentence;
@@ -985,7 +1072,7 @@ function ResetButton(props){
   return (
     <Fragment>
       { generationComplete? 
-        <p><input type="button" onClick={doReset} value="Reset" className="cust-button"/></p>
+        <p><input type="button" onClick={doReset} value="Return to Setup" className="cust-button"/></p>
       :
       ''
       }
@@ -994,39 +1081,58 @@ function ResetButton(props){
 }
 
 function ResultsHeader(props){
-  let percentageMatch = props.percentageMatch;
-  let outputFilename = props.outputFilename;
-
   return (
     <Fragment>
-      <div className="facet-group-header-text">
-        Results {percentageMatch!==null? (' - ' +percentageMatch + ' Keyword Matches'): '' }
-      </div> 
+      <div className="facet-group-header-text">Results</div> 
+      <hr className="rounded"/>
+    </Fragment>
+  )
+}
+
+function DetailedResultsHeader(props){
+  return (
+    <Fragment>
+      <div className="facet-group-header-text">Detailed Results</div> 
       <hr className="rounded"/>
     </Fragment>
   )
 }
 
 function ResultsSection(props){
+  let filename = props.filename;
+  console.log('ResultsSection: filename ' + filename);
+
   let outputFilename = props.outputFilename;
   let handleDownload = props.handleDownload;
   let percentageMatch = props.percentageMatch;
   let chartData = props.chartData;
   let downloadUrl = './resume/download?filename='+outputFilename;
+  let keywordArray= props.keywordArray;
+  let stats = props.stats;
+  let unmatchedKeywords= props.unmatchedKeywords;
 
   return (
     <Fragment>
-      <ResultsHeader percentageMatch={percentageMatch} outputFilename={outputFilename}/>
-  {outputFilename!==null?
+      <ResultsHeader/>
+      
+
+{outputFilename!==null?
     <div>
-      <button onClick={() => {handleDownload(downloadUrl, outputFilename)}} className="cust-button3">Download Tailored Resume <br/> {outputFilename}</button>
+      <button onClick={() => {handleDownload(downloadUrl, outputFilename)}} className="cust-button2">Download Tailored Resume<br/>{outputFilename}</button>
       <p>
       <KeywordMatchesChart chartData={chartData} percentageMatch={percentageMatch}/>
       </p>
     </div>
-      :
-      ''
-      }
+:''}
+      <DetailedResultsHeader/>
+      <KeywordPercentageMatch percentageMatch={percentageMatch}/>
+      <KeywordResultsListing keywordArray={keywordArray}/>
+      <MatchedKeywordListing stats={stats}/>
+      <UnmatchedKeywordListing unmatchedKeywords={unmatchedKeywords}/>
+      <OriginalDocument filename={filename}/>
+      <UpdatedDocument filename={outputFilename}/>
+      <ResultTimestamp/>
+
 
     </Fragment>
   )
@@ -1122,7 +1228,7 @@ function ValidationSection( props)
     {
       errors.push("Missing style option(s): Select one or more options (italicize,underline,boldface,highlight)");
     }
-    if ( keywords.trim()===''){
+    if ( keywords===null || keywords.trim()===''){
       errors.push("Missing keyword(s): Enter at least one keyword to style");
     }
   }
@@ -1473,17 +1579,134 @@ function Approach( props)
   )
 }
 
+function MatchedKeywordListing (props){
+
+  let stats=props.stats;
+
+  let matchListing='No matches found';
+  let matchArray=[];
+
+  if ( stats!==null){
+    let i=0;
+
+    Object.entries( stats ).map(([keyword,matches])=>{
+      let s = keyword + " (" + matches + ")";
+      matchArray.push(s)
+      return i++;
+    })
+    matchListing= matchArray.join(", ");
+  
+  }
+
+  return(
+    <ResultDetail resultLabel="Matches Found" resultValue={matchListing}/>
+  )
+}
+
+function UnmatchedKeywordListing (props){
+
+  let unmatchedKeywords=props.unmatchedKeywords;
+
+  let unmatchedListing='No unmatched keywords';
+  
+  if ( unmatchedKeywords!==null && unmatchedKeywords.length>0){
+    unmatchedKeywords = unmatchedKeywords.sort(function(a,b){
+      return a.localeCompare(b);
+    })
+    unmatchedListing= unmatchedKeywords.join(", ");
+  
+  }
+
+  return(
+    <ResultDetail resultLabel="Unmatched Keywords" resultValue={unmatchedListing}/>
+  )
+}
+
+function ResultTimestamp (props){
+  
+  let timestamp = moment().format("MMM-DD-YYYY hh:mm:ss a")
+
+  return(
+    <ResultDetail resultLabel="Results Timestamp" resultValue={timestamp}/>
+  )
+}
+
+function OriginalDocument (props){
+  let filename = props.filename;
+  return(
+    <ResultDetail resultLabel="Original Doc" resultValue={filename}/>
+  )
+}
+
+function UpdatedDocument (props){
+  let filename = props.filename;
+  return(
+    <ResultDetail resultLabel="Updated Doc" resultValue={filename}/>
+  )
+}
+
+function ResultDetail( props ){
+  let resultLabel = props.resultLabel;
+  let resultValue = props.resultValue;
+
+  return(
+    <div>
+      <div className="search-replace-line">
+        <span className="add-keywords-label"><b>{resultLabel}:&nbsp;</b></span>
+      </div>
+      <div className="search-replace-line">
+        <span className="keywords-listing-label">{resultValue}</span>
+      </div>
+    </div>
+  )
+
+}
+
+
+function KeywordPercentageMatch (props){
+
+  let percentageMatch=props.percentageMatch;
+
+  let percentageMatchString = "Not Applicable";
+
+  if ( percentageMatch!==null && percentageMatch.trim()!==''){
+    percentageMatchString = percentageMatch;
+  }
+
+  return(
+    <ResultDetail resultLabel="Overall Match" resultValue={percentageMatchString}/>
+  )
+}
+
+function KeywordResultsListing (props){
+
+  let keywordArray=props.keywordArray;
+
+  let keywordList = "None";
+
+  if ( keywordArray!==null && keywordArray.length>0){
+    keywordArray = keywordArray.sort(function(a,b){
+      return a.localeCompare(b);
+    })
+    keywordList= keywordArray.join(", ");
+  }
+
+  return(
+    <ResultDetail resultLabel="Keywords Sought" resultValue={keywordList}/>
+  )
+}
 
 
 function KeywordEntry (props){
+
+  let keywordsOnBlurHandler=props.keywordsOnBlurHandler;
+  let keywordsOnFocusHandler = props.keywordsOnFocusHandler;
+  let keywords= props.keywords;
 
   let maxLengthString='200';
   if ( props.maxLength){
     maxLengthString=String(props.maxLength);
   }
-
-  let keywordsOnBlurHandler=props.keywordsOnBlurHandler;
-  let keywordsOnFocusHandler = props.keywordsOnFocusHandler;
 
   return(
     <div>
@@ -1494,7 +1717,7 @@ function KeywordEntry (props){
         <input type="text" 
           className='keyword' 
           maxLength={maxLengthString} 
-          defaultValue={keywordsDefaultText} 
+          defaultValue={keywords===null || keywords.trim()===''? keywordsDefaultText:keywords} 
           onBlur={(e)=>{keywordsOnBlurHandler(e);
           }} 
           onFocus={(e) =>keywordsOnFocusHandler(e)}/>

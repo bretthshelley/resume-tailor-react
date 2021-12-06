@@ -56,6 +56,12 @@ ol, ul {
 
 .cust-button{
   font-size: 1rem;
+  cursor: pointer;
+}
+
+.upload-file-image{
+  float:left; 
+  margin-bottom:-5px
 }
 
 .cust-button2{
@@ -102,8 +108,7 @@ ol, ul {
   display: inline-block;
 }
 
-.add-keywords-label{
-  width: 140px;
+.keywords-listing-label{
   display: block;
 }
 
