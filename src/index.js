@@ -54,7 +54,9 @@ const removeBulletsTooltip="<b>Remove Bullets without Keywords Explanation</b>: 
 const replaceDefaultText='';
 const searchDefaultText='';
 const wordFileType='application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-
+const keywordStylingTooltip="<b>Style Keywords Hint</b>: Select the <i>Italics</i>, <i>Boldface</i>, <i>Highlight</i>, <i>Underline</i> checkboxes to see the effect on the Example Sentence. "
++"Also try out the <i>Keywords</i> and <i>Sentences with Keywords</i> drop down values.  "
++"The chosen combination of styling effects seen in the Example Sentence are applied to the generated Word document.";
 const removeBracketsTooltip="<p><b>Remove Brackets Explanation</b>:<br/>'Removing Brackets' results in the following:"
 +"<ul>"
 +"<li>Before: Filled in as the Team's Database administrator [#Oracle,#DBA,#keepme,#leadership].</li>"
@@ -816,7 +818,8 @@ class ResumeTailorForm extends React.Component {
           italicize={this.state.italicize}
           boldface={this.state.boldface}
         /> 
-        {this.state.styleKeywords?<div className="example-sentence-indented">{parse(this.getExampleSentence())}</div>:''} 
+        <ExampleSentence styleKeywords={this.state.styleKeywords} getExampleSentence={this.getExampleSentence.bind(this)} />
+       
 
         <SearchAndReplaceSection
           searchReplaceOnChangeHandler={this.searchReplaceOnChangeHandler.bind(this)}
@@ -848,6 +851,7 @@ class ResumeTailorForm extends React.Component {
         <GenerateSection loaderVisible={this.state.loaderVisible} 
           doSubmit={this.doSubmit.bind(this)} 
           generationComplete={this.state.generationComplete}/>
+        
         <ResetButton   
           doReset={this.doReset.bind(this)}
           generationComplete={this.state.generationComplete}/>  
@@ -917,6 +921,21 @@ class ResumeTailorForm extends React.Component {
       this.setState({boldfaceApproach: approach});
     }
   }
+
+}
+
+function ExampleSentence(props){
+  let styleKeywords= props.styleKeywords;
+  let getExampleSentence= props.getExampleSentence;
+
+  return(
+    <Fragment>
+    {styleKeywords?
+      <div className="example-sentence-indented">{parse(getExampleSentence())}</div>
+    :''
+    } 
+    </Fragment>
+  )
 
 }
 
@@ -1391,6 +1410,9 @@ function KeywordStyleSection( props){
         </div>
         <div className="keyword-styling-line">
           <span className="remove-bullets-styling-label">Style Keywords</span>
+        </div>
+        <div className="keyword-styling-line">
+          <InfoPopup tooltip={keywordStylingTooltip}/>
         </div>
       </div>
   
