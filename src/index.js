@@ -9,8 +9,8 @@ import fileDownload from 'js-file-download'
 import Chart from 'react-google-charts'
 import Popup from 'reactjs-popup';
 import 'reactjs-popup/dist/index.css';
-
-
+import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
+import Loader from 'react-loader-spinner';
 
 const InfoPopup = (props) => {
   const [open, setOpen] = useState(false);
@@ -55,7 +55,7 @@ const replaceDefaultText='';
 const searchDefaultText='';
 const wordFileType='application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
-const removeBracketsTooltip="<p>'Removing Brackets' results in the following:"
+const removeBracketsTooltip="<p><b>Remove Brackets Explanation</b>:<br/>'Removing Brackets' results in the following:"
 +"<ul>"
 +"<li>Before: Filled in as the Team's Database administrator [#Oracle,#DBA,#keepme,#leadership].</li>"
 +"<li>After: Filled in as the Team's Database administrator.</li>"
@@ -196,6 +196,8 @@ class ResumeTailorForm extends React.Component {
       stats: null,
       unmatchedKeywords: [],
       percentageMatch:null,
+      loaderVisible:false,
+      generationComplete: false
     };
 
     
@@ -217,7 +219,20 @@ class ResumeTailorForm extends React.Component {
   }
 
   doResumeUpload = () => { 
-    this.setState({uploadError: null, uploadResponse: null})
+    
+    // zero out the state before the post
+    this.setState({
+      uploadError: null, 
+      uploadResponse: null,      
+      outputFilename: null, 
+      unmatchedKeywords: null,
+      stats: null,
+      percentageMatch: null,
+      loaderVisible: true,
+      generationComplete: false,
+    });  
+    
+    
     const formData = new FormData(); 
    
     formData.append( 
@@ -227,9 +242,6 @@ class ResumeTailorForm extends React.Component {
     ); 
 
     const mainRequestBody = this.buildMainRequestBody();
-
-    console.log("mainRequestBody:" + mainRequestBody);
-
     formData.append("json", mainRequestBody);
     axios.post("resume/upload", formData, {
       /// ... headers are set automagically. You are supposed to have those undefined.
@@ -238,24 +250,31 @@ class ResumeTailorForm extends React.Component {
       // }
     })
       .then(res => {
-        console.log('getting percentage match from resonse: ' + res.data.percentageMatch)
-
         this.setState({ outputFilename: res.data.outputFilename, 
                         unmatchedKeywords: res.data.unmatchedKeywords,
                         stats: res.data.stats,
-                        percentageMatch: res.data.percentageMatch
+                        percentageMatch: res.data.percentageMatch,
+                        loaderVisible: false,
+                        generationComplete: true
                       });  
 
       }).catch(err => {
-        console.error("Upload Error: " + {err});
-        console.log("error status: " +err.response.status);
-        this.setState({uploadError: err})
+        this.setState({uploadError: err, loaderVisible: false, generationComplete: false})
       });
   }; 
 
+  doReset(){
+    this.setState({
+      generationComplete:false,
+      loaderVisible: false, 
+      stats: null,
+      unmatchedKeywords: null,
+      outputFilename: null,
+      percentageMatch: null
+    });
+  }
 
   doSubmit(){
-    console.log("doSubmit");
     this.setState({validationInProgress:true});
     
     if ( this.isInputValid()){
@@ -270,40 +289,30 @@ class ResumeTailorForm extends React.Component {
     let body='{'
 
     let keywordStyleRequest= this.buildKeywordStyleRequest();
-    console.log("keywordStyleRequest:" + keywordStyleRequest);
     body+=keywordStyleRequest;
-    console.log("body:" + body);
     
     let searchAndReplaceRequest= this.buildSearchAndReplaceRequest();
-    console.log("searchAndReplaceRequest:" + searchAndReplaceRequest);
     if ( body!=='{'){
       body+=',';
     }
     body+=searchAndReplaceRequest;
-    console.log("body:" + body);
 
     let trimBulletsRequest = this.buildTrimBulletsRequest();
     if ( body!=='{' && body.endsWith(',')!==true){
       body+=',';
     }
     body+=trimBulletsRequest;
-    console.log("body:" + body);
 
     if ( body!=='{' && body.endsWith(',')!==true){
       body+=',';
     }
     body+='"removeKeywordlessBullets":'+this.state.removeBullets;
-    console.log("body:" + body);
 
     if ( body!=='{' && body.endsWith(',')!==true){
       body+=',';
     }
     body+='"removeBracketedStrings":'+this.state.brackets;
-    console.log("body:" + body);
-
     body+='}'
-
-    console.log("main request body:" + body);
     return body;
   }
 
@@ -705,6 +714,7 @@ class ResumeTailorForm extends React.Component {
   }
 
   assembleChartData(){
+    const stats = this.state.stats;
     let chartData= [
       [
         'Keyword',
@@ -719,8 +729,7 @@ class ResumeTailorForm extends React.Component {
       ]
     ];
 
-    const stats = this.state.stats;
-
+   
     if ( stats!==null){
       let i=0;
 
@@ -739,9 +748,9 @@ class ResumeTailorForm extends React.Component {
     }
 
    
-
-
-
+    if( chartData.length<2){
+      return []; /// return an empty array 
+    }
     return chartData;
   }
 
@@ -836,15 +845,18 @@ class ResumeTailorForm extends React.Component {
      
         <BracketSection bracketsChangeHandler={this.handleBracketsChange.bind(this)} 
         />
-         <p><input type="button" onClick={this.doSubmit.bind(this)} value="Generate Tailored Resume" className="cust-button"/></p>
+        <GenerateSection loaderVisible={this.state.loaderVisible} 
+          doSubmit={this.doSubmit.bind(this)} 
+          generationComplete={this.state.generationComplete}/>
+        <ResetButton   
+          doReset={this.doReset.bind(this)}
+          generationComplete={this.state.generationComplete}/>  
 
-
-        <OutputFileInfo outputFilename={this.state.outputFilename}  
+        <ResultsSection outputFilename={this.state.outputFilename}  
                         handleDownload={this.handleDownload.bind(this)}
                         percentageMatch={this.state.percentageMatch}
                         chartData={this.assembleChartData()}/>
-        
-        
+                      
       </div>
     );
   }
@@ -908,7 +920,75 @@ class ResumeTailorForm extends React.Component {
 
 }
 
-function OutputFileInfo(props){
+function GenerateSection(props){
+  let loaderVisible = props.loaderVisible;
+  let doSubmit = props.doSubmit;
+  let generationComplete=props.generationComplete;
+
+  return (
+    <Fragment>
+      { loaderVisible? 
+          <Loader
+          type="ThreeDots"
+          color="#00BFFF"
+          height={60}
+          width={60}
+          timeout={300000} 
+          visible={loaderVisible}
+        />
+      :
+        <GenerateButton doSubmit={doSubmit} generationComplete={generationComplete} />        
+      }
+
+    </Fragment>
+
+  )
+
+}
+
+function GenerateButton(props){
+  let doSubmit = props.doSubmit;
+  let generationComplete=props.generationComplete;
+
+  return (
+    <Fragment>
+      { generationComplete? '' :
+        <p><input type="button" onClick={doSubmit} value="Generate Tailored Resume" className="cust-button2"/></p>
+      }
+    </Fragment>
+  )
+}
+
+function ResetButton(props){
+  let doReset = props.doReset;
+  let generationComplete=props.generationComplete;
+
+  return (
+    <Fragment>
+      { generationComplete? 
+        <p><input type="button" onClick={doReset} value="Reset" className="cust-button"/></p>
+      :
+      ''
+      }
+    </Fragment>
+  )
+}
+
+function ResultsHeader(props){
+  let percentageMatch = props.percentageMatch;
+  let outputFilename = props.outputFilename;
+
+  return (
+    <Fragment>
+      <div className="facet-group-header-text">
+        Results {percentageMatch!==null? (' - ' +percentageMatch + ' Keyword Matches'): '' }
+      </div> 
+      <hr className="rounded"/>
+    </Fragment>
+  )
+}
+
+function ResultsSection(props){
   let outputFilename = props.outputFilename;
   let handleDownload = props.handleDownload;
   let percentageMatch = props.percentageMatch;
@@ -917,18 +997,12 @@ function OutputFileInfo(props){
 
   return (
     <Fragment>
-
-        <div className="facet-group-header-text">
-          Results {percentageMatch!==null? (' - ' +percentageMatch + ' Match'): '' }      
-        </div>
-        <hr className="rounded"/>
-
-
-      {outputFilename!==null?
+      <ResultsHeader percentageMatch={percentageMatch} outputFilename={outputFilename}/>
+  {outputFilename!==null?
     <div>
-      <button onClick={() => {handleDownload(downloadUrl, outputFilename)}} className="cust-button">Download {outputFilename}</button>
+      <button onClick={() => {handleDownload(downloadUrl, outputFilename)}} className="cust-button3">Download Tailored Resume <br/> {outputFilename}</button>
       <p>
-      <ExampleChart chartData={chartData} percentageMatch={percentageMatch}/>
+      <KeywordMatchesChart chartData={chartData} percentageMatch={percentageMatch}/>
       </p>
     </div>
       :
@@ -939,27 +1013,39 @@ function OutputFileInfo(props){
   )
 }
 
-function ExampleChart (props) {
+function KeywordMatchesChart (props) {
   let chartData = props.chartData;
-  let percentageMatch = props.percentageMatch;
-  console.log('percentage match: ' + percentageMatch);
-  let chartTitle = 'Keyword Search Statistics ('+percentageMatch + ' Match)';
-  console.log('chart title: ' + chartTitle);
+  let startGrowingThreshold=6;
+  let growBy=30;
+  let maxHeight=800;
+
+  let baseHeight = 300;
+  let height= chartData.length>startGrowingThreshold?(baseHeight + (chartData.length-(startGrowingThreshold))*growBy):baseHeight;
+  if ( height>maxHeight){
+    height=maxHeight;
+  }
+  let pixelHeight=''+height+'px';
+  let optionsHeight= height-50;
+
 
   return (
-    <Chart
-    width={'100%'}
-    height={'300px'}
-    chartType="BarChart"
-    loader={<div>Loading Chart</div>}
-    data= {chartData}
-    options={{
-      title: 'Keyword Search Statistics',
-      height: 250,
-      bar: { groupWidth: '95%' },
-      legend: { position: 'none' },
-    }}
-    />
+    (chartData.length>0?
+
+      <Chart
+      width={'100%'}
+      height={pixelHeight}
+      chartType="BarChart"
+      loader={<div>Loading Chart</div>}
+      data= {chartData}
+      options={{
+        title: 'Keyword Search Statistics',
+        height: optionsHeight,
+        bar: { groupWidth: '95%' },
+        legend: { position: 'none' },
+      }}
+      />
+    :
+    '')    
   );
 };
 
@@ -969,7 +1055,7 @@ function UploadErrorsSection( props){
   let errors= [];
 
   if ( uploadError!==null ){
-    let message = "Upload Error occurred with status " + uploadError.response.status ;
+    let message = "Server Error occurred "; // + uploadError.response.status ;
     errors.push(message);
   }
 
