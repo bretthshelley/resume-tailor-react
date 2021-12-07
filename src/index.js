@@ -303,6 +303,8 @@ class ResumeTailorForm extends React.Component {
   buildMainRequestBody(){
     let body='{'
 
+    this.buildKeywordsArrayString();
+
     let keywordStyleRequest= this.buildKeywordStyleRequest();
     body+=keywordStyleRequest;
     
@@ -390,9 +392,16 @@ class ResumeTailorForm extends React.Component {
 
   buildKeywordsArrayString()
   {
-    let keywordArray = [];    
+    let keywordArray = [];   
+    
+    if ( this.state.keywords===undefined || this.state.keywords===null ){
+      this.setState({keywordArray: keywordArray});
+      return JSON.stringify(keywordArray);
+    }
+
     if ( this.state.keywords.indexOf(",")===-1){
       keywordArray.push(this.state.keywords.trim());
+      this.setState({keywordArray: keywordArray});
       return JSON.stringify(keywordArray);
     }
 
@@ -985,10 +994,7 @@ function SelectResumeSection(props){
   return (
     <div>
       <div className="search-replace-line">
-      <span className="select-resume-label">Select a Resume</span>
-      </div>
-      <div className="search-replace-line">
-        <input type="button" onClick={handleClick} value="Upload in .docx format" className="cust-button"/>
+        <input type="button" onClick={handleClick} value="Select a Resume in .docx format" className="cust-button"/>
         <input type="file" ref={hiddenFileInput} onChange={onFileChange} className="cust-button" style={{display: 'none'}} />
       </div>
       <SelectedFile selectedFile={selectedFile}/>
@@ -1092,7 +1098,7 @@ function ResultsHeader(props){
 function DetailedResultsHeader(props){
   return (
     <Fragment>
-      <div className="facet-group-header-text">Detailed Results</div> 
+      <div className="facet-group-header-text">Result Details</div> 
       <hr className="rounded"/>
     </Fragment>
   )
@@ -1100,8 +1106,6 @@ function DetailedResultsHeader(props){
 
 function ResultsSection(props){
   let filename = props.filename;
-  console.log('ResultsSection: filename ' + filename);
-
   let outputFilename = props.outputFilename;
   let handleDownload = props.handleDownload;
   let percentageMatch = props.percentageMatch;
@@ -1110,6 +1114,8 @@ function ResultsSection(props){
   let keywordArray= props.keywordArray;
   let stats = props.stats;
   let unmatchedKeywords= props.unmatchedKeywords;
+  console.log('ResultsSection: filename ' + filename + " keywordArray: " + JSON.stringify(keywordArray));
+
 
   return (
     <Fragment>
@@ -1118,7 +1124,7 @@ function ResultsSection(props){
 
 {outputFilename!==null?
     <div>
-      <button onClick={() => {handleDownload(downloadUrl, outputFilename)}} className="cust-button2">Download Tailored Resume<br/>{outputFilename}</button>
+      <button onClick={() => {handleDownload(downloadUrl, outputFilename)}} className="cust-button2">Download Tailored Resume</button>
       <p>
       <KeywordMatchesChart chartData={chartData} percentageMatch={percentageMatch}/>
       </p>
@@ -1167,6 +1173,8 @@ function KeywordMatchesChart (props) {
         height: optionsHeight,
         bar: { groupWidth: '95%' },
         legend: { position: 'none' },
+        hAxis: { title: "Matches Found"},
+        vAxis: { title: "Keywords", minValue: 0, format: '0'}
       }}
       />
     :
@@ -1594,7 +1602,9 @@ function MatchedKeywordListing (props){
       matchArray.push(s)
       return i++;
     })
-    matchListing= matchArray.join(", ");
+    if (matchArray.length>0){
+      matchListing= matchArray.join(", ");
+    }   
   
   }
 
@@ -1681,14 +1691,20 @@ function KeywordPercentageMatch (props){
 function KeywordResultsListing (props){
 
   let keywordArray=props.keywordArray;
-
+  console.log(":KeywordResultsListing: keywordArray = " + JSON.stringify(keywordArray))
   let keywordList = "None";
 
   if ( keywordArray!==null && keywordArray.length>0){
     keywordArray = keywordArray.sort(function(a,b){
       return a.localeCompare(b);
     })
-    keywordList= keywordArray.join(", ");
+    if ( keywordArray.length===1 && keywordArray[0]==='')
+    {
+      keywordList="None";
+    }
+    else if ( keywordArray.length>0){
+      keywordList= keywordArray.join(", ");
+    }
   }
 
   return(
@@ -1711,7 +1727,7 @@ function KeywordEntry (props){
   return(
     <div>
       <div className="search-replace-line">
-        <span className="add-keywords-label">Add Keywords</span>
+        <span className="add-keywords-label">Add Keywords&nbsp;</span>
       </div>
       <div className="search-replace-line">
         <input type="text" 

@@ -65,7 +65,7 @@ ol, ul {
 }
 
 .cust-button2{
-  background-color: #62529c;
+  background-color: #2557a7;
   border: none;
   color: #fff;
   padding: 15px 30px;
@@ -73,17 +73,19 @@ ol, ul {
   margin: 4px 2px;
   cursor: pointer;
   font-size: 1rem;
+  border-radius: 10px;
 }
 
 .cust-button3{
-  background-color: #70b0c0;
+  background-color: #2557a7;
   border: none;
   color: #fff;
-  padding: 15px 30px;
+  padding: 3px 10px;
   text-decoration: none;
   margin: 4px 2px;
   cursor: pointer;
   font-size: 1rem;
+  border-radius: 7px;
 }
 
 
@@ -109,7 +111,7 @@ ol, ul {
 }
 
 .keywords-listing-label{
-  display: block;
+  display: block;  
 }
 
 .indent-span{
