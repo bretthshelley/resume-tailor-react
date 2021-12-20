@@ -27,8 +27,8 @@ const InfoPopup = (props) => {
         </path>
       </svg>
 
-      <Popup open={open} closeOnDocumentClick onClose={closeModal} arrow="true" position="right center">
-        <div className="modal">
+      <Popup className='my-popup' open={open} closeOnDocumentClick onClose={closeModal} arrow="true" position="right center">
+        <div className="modal2">
           <a className="close" onClick={closeModal}>
             &times;
           </a>
@@ -974,7 +974,9 @@ function SectionHeader(props){
 
   return (
     <Fragment>
-      <div className="facet-group-header-text">{text}</div>
+      <div className="facet-group-header-parent">
+        <div className="facet-group-header-text">{text}</div>
+      </div>
       <hr className="rounded"/>
     </Fragment>
   )
@@ -992,7 +994,7 @@ function SelectResumeSection(props){
   };
 
   return (
-    <div>
+    <div className='facet-group-option'>
       <div className="search-replace-line">
         <input type="button" onClick={handleClick} value="Select a Resume in .docx format" className="cust-button"/>
         <input type="file" ref={hiddenFileInput} onChange={onFileChange} className="cust-button" style={{display: 'none'}} />
@@ -1010,7 +1012,7 @@ function SelectedFile( props){
 
   return (
     <div className="search-replace-line">
-      <span>&nbsp;&nbsp;{selectedFile!==null && selectedFile!==undefined? selectedFile.name:'No file selected'}</span>
+      &nbsp;&nbsp;{selectedFile!==null && selectedFile!==undefined? selectedFile.name:'No file selected'}
     </div>
   )
 
@@ -1065,7 +1067,9 @@ function GenerateButton(props){
   return (
     <Fragment>
       { generationComplete? '' :
-        <p><input type="button" onClick={doSubmit} value="Generate Tailored Resume" className="cust-button2"/></p>
+        <div className='facet-group-option'>
+          <input type="button" onClick={doSubmit} value="Generate Tailored Resume" className="cust-button2"/>
+        </div>
       }
     </Fragment>
   )
@@ -1078,7 +1082,9 @@ function ResetButton(props){
   return (
     <Fragment>
       { generationComplete? 
-        <p><input type="button" onClick={doReset} value="Return to Setup" className="cust-button"/></p>
+        <div className='facet-group-option'>
+          <input type="button" onClick={doReset} value="Return to Setup" className="cust-button"/>
+        </div>
       :
       ''
       }
@@ -1088,19 +1094,13 @@ function ResetButton(props){
 
 function ResultsHeader(props){
   return (
-    <Fragment>
-      <div className="facet-group-header-text">Results</div> 
-      <hr className="rounded"/>
-    </Fragment>
+    <SectionHeader text="Results"/>
   )
 }
 
 function DetailedResultsHeader(props){
   return (
-    <Fragment>
-      <div className="facet-group-header-text">Result Details</div> 
-      <hr className="rounded"/>
-    </Fragment>
+    <SectionHeader text="Result Details"/>
   )
 }
 
@@ -1123,11 +1123,9 @@ function ResultsSection(props){
       
 
 {outputFilename!==null?
-    <div>
+    <div className='facet-group-option'>
       <button onClick={() => {handleDownload(downloadUrl, outputFilename)}} className="cust-button2">Download Tailored Resume</button>
-      <p>
       <KeywordMatchesChart chartData={chartData} percentageMatch={percentageMatch}/>
-      </p>
     </div>
 :''}
       <DetailedResultsHeader/>
@@ -1202,10 +1200,12 @@ function UploadErrorsSection( props){
   return (
     <Fragment>
       {errors.length>0?
-    <div className="validation-message">
-      {parse(errorHtml)}
-    </div>
-    :''}
+      <div className='validation-message-parent'>
+        <div className="validation-message">
+          {parse(errorHtml)}
+        </div>
+      </div>
+      :''}
     </Fragment>
   )
 
@@ -1275,8 +1275,10 @@ function ValidationSection( props)
   return (
     <Fragment>
       {errors.length>0?
-    <div className="validation-message">
-      {parse(errorHtml)}
+      <div className='validation-message-parent'>
+        <div className="validation-message">
+          {parse(errorHtml)}
+        </div>
     </div>
     :''}
     </Fragment>
@@ -1358,8 +1360,8 @@ function OptionalTextLine(props){
   return (
     <Fragment>
       {show?
-        <div>
-          <div className="search-replace-line"><span className="indent-span"></span></div>
+        <div className='facet-group-option'>
+          <div className="search-replace-line"><span className="indent-span">&nbsp;&nbsp;</span></div>
           <div className="search-replace-line">
             <span className="search-replace-label">{labelText}</span>
           </div>
@@ -1406,7 +1408,7 @@ function SearchAndReplaceSection( props){
           <InfoPopup tooltip={findReplaceTooltip}/>
         </div>
       </div>
-      <div>
+      <div className='facet-group-option'>
         <OptionalTextLine show={searchReplace} onFocusHandler={searchOnFocusHandler} onBlurHandler={searchOnBlurHandler} labelText='Find what:' defaultValue={search}/>
         <OptionalTextLine show={searchReplace} onFocusHandler={replaceOnFocusHandler} onBlurHandler={replaceOnBlurHandler} labelText='Replace with:' defaultValue={replace}/> 
       </div>
@@ -1660,7 +1662,7 @@ function ResultDetail( props ){
   let resultValue = props.resultValue;
 
   return(
-    <div>
+    <div className="facet-group-option">
       <div className="search-replace-line">
         <span className="add-keywords-label"><b>{resultLabel}:&nbsp;</b></span>
       </div>
@@ -1725,11 +1727,11 @@ function KeywordEntry (props){
   }
 
   return(
-    <div>
-      <div className="search-replace-line">
-        <span className="add-keywords-label">Add Keywords&nbsp;</span>
+    <div className="facet-group-option">
+      <div className="add-keyword-styling-line">
+        <span className="add-keyword-styling-label">Add Keywords&nbsp;</span>
       </div>
-      <div className="search-replace-line">
+      <div className="add-keyword-styling-line">
         <input type="text" 
           className='keyword' 
           maxLength={maxLengthString} 

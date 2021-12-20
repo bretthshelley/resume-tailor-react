@@ -51,12 +51,14 @@ ol, ul {
 
 .keyword{
   width: 40ch;
-  font-size: 1rem;
+  font-size: 16px;
 }
 
 .cust-button{
   font-size: 1rem;
   cursor: pointer;
+  font-size: 16px !important;
+  display: inline-block none !important;
 }
 
 .upload-file-image{
@@ -72,8 +74,9 @@ ol, ul {
   text-decoration: none;
   margin: 4px 2px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 16px !important;
   border-radius: 10px;
+  display: inline-block;
 }
 
 .cust-button3{
@@ -91,10 +94,12 @@ ol, ul {
 
 .search-replace-line{
   display: inline-block;
-  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
-  font-size: 1rem;
-  line-height: 16px;
-  padding-top: 10px;
+  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif !important;
+  font-size: 16px !important;
+  line-height: 18px !important;
+  padding-top: 10px !important;
+  padding-bottom: 5px;  
+  text-align: left;
 }
 
 
@@ -102,7 +107,7 @@ ol, ul {
 
 .search-replace-label{
   width: 100px;
-  display: block;
+  display: inline-block;
 }
 
 .select-resume-label{
@@ -116,18 +121,34 @@ ol, ul {
 
 .indent-span{
   width: 20px;
-  display: block;
+  display: inline-block;
 }
 
+.add-keyword-styling-label{
+  display: inline-block !important;
+}
 
+.add-keyword-styling-line{
+  display: inline-block;
+  text-align: left !important;
+  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
+  font-size: 16px !important;
+  line-height: 16px;
+  padding-top: 0px;
+  padding-left: 5px; 
+}
 
 .keyword-styling-line{
   display: inline-block;
+  text-align: left;
   font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
-  font-size: 1rem;
+  font-size: 16px !important;
   line-height: 16px;
   padding-top: 0px;
+  padding-left: 5px; 
 }
+
+
 
 .keyword-styling-label{
   width: 80px;
@@ -147,52 +168,58 @@ ol, ul {
   width: max-content;
 }
 
+.facet-group-header-parent{
+  text-align: left;
+}
 
 .facet-group-header-text{
-  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
-  font-size: 1rem;
-  font-weight: bold;
-  line-height: 16px;
-  color: #333;
-  cursor: pointer;
-  display: inline-block;
-  padding-top: 20px;
-  max-width: 400px;
-  padding-bottom: 1px;
+  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  line-height: 18px !important;
+  color: #333 !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+  padding-top: 20px !important;
+  max-width: 400px !important;
+  padding-bottom: 1px !important;  
 }
 
 .facet-group-option{
   box-sizing: border-box;
   cursor: pointer;
   font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 300;
   line-height: 1.5;
   color: #4d4d4d;
   padding-top: 5px;
-  max-width: 364px;
+  max-width: 800px;
   padding-bottom: 5px;
+  text-align: left;
+
 }
 
 .tooltipDiv{
-  padding-left: 10px;
-
+  padding-left: 10px !important;
+  font-size: 16px !important;
+ 
 }
 
 .tooltipSentence{
-  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
-  font-size: 1rem;
-  font-weight: 300;
-  line-height: 1.5;
-  color: black;
-  padding-top: 15px;
-  padding-bottom: 5px;
+  font-family: Helvetica, Arial, 'Lucida Grande',sans-serif ;
+  font-size: 16px ;
+  font-weight: 300 ;
+  line-height: 1.5 ;
+  color: black ;
+  padding-top: 15px ;
+  padding-bottom: 5px ;
 }
 
 .exampleSentence{
   box-sizing: border-box;
   font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
-  font-size: 1rem;
+  font-size: 16px !important;
   font-weight: 300;
   line-height: 1.5;
   color: black;
@@ -213,25 +240,32 @@ ol, ul {
 }
 
 .validation-image{
-  width:20px;
-  height:20px;  
+  width:24px !important;
+  height:24px !important;  
+  display: inline-block;
+}
+
+.validation-message-parent{
+  text-align: left;
+
 }
 
 .validation-message{
   box-sizing: border-box;
   font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
-  font-size: 1rem;
-  font-weight: 300;
+  font-size: 16px;
   line-height: 1.5;
   color: red;
   padding-top: 5px;
   padding-bottom: 5px;
+  display: inline-block;
+  text-align: left;
 }
 
 .example-sentence-indented{
   box-sizing: border-box;
   font-family: Helvetica, Arial, 'Lucida Grande',sans-serif;
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 300;
   line-height: 1.5;
   color: black;
@@ -256,6 +290,10 @@ facet-group-option-inline{
 hr.rounded {
   border-top: 2px solid #ccc;
   border-radius: 1px;
+  height: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+
 }
 
 .daright {
@@ -329,27 +367,27 @@ hr.rounded {
 }
 
 
-.modal {
-  font-size: 12px;
+.modal2 {
+  font-size: 12px !important;
 }
-.modal > .header {
-  width: 100%;
-  border-bottom: 1px solid gray;
-  font-size: 18px;
-  text-align: center;
-  padding: 5px;
+.modal2 > .header {
+  width: 100% !important;
+  border-bottom: 1px solid gray !important;
+  font-size: 18px !important;
+  text-align: center !important;
+  padding: 5px !important;
 }
-.modal > .content {
+.modal2 > .content {
   width: 100%;
   padding: 10px 5px;
 }
-.modal > .actions {
+.modal2 > .actions {
   width: 100%;
   padding: 10px 5px;
   margin: auto;
   text-align: center;
 }
-.modal > .close {
+.modal2 > .close {
   cursor: pointer;
   position: absolute;
   display: block;
@@ -361,4 +399,25 @@ hr.rounded {
   background: #ffffff;
   border-radius: 18px;
   border: 1px solid #cfcece;
+}
+
+.my-popup-content {
+  margin: auto !important;
+  background: rgb(255, 255, 255) !important;
+  width: 50% !important;
+  padding: 5px !important;
+}
+.my-popup-arrow {
+  color: rgb(255, 255, 255) !important;
+}
+[role='tooltip'].my-popup-content {
+  width: 200px !important;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 0px 3px !important;
+}
+
+.my-popup-overlay {
+  background: rgba(0, 0, 0, 0.5) !important;
+}
+[data-popup='tooltip'].my-popup-overlay {
+  background: transparent !important;
 }
