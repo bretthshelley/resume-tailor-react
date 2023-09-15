@@ -149,8 +149,8 @@ function HighlightColorSelect(props) {
   let highlightDefaultValue={ label: highlightColorLabel, value: highlightColor };
 
   return (
-    <div style={{marginLeft:'120px',marginTop:'10px'}}>
-      <div style={{width:'170px'}}>
+    <div style={{marginLeft:'128px',marginTop:'4px'}}>
+      <div style={{width:'208px'}}>
         <Select
           options={highlightColorOptions}
           styles={colourStyles}
@@ -1479,19 +1479,21 @@ function HighlightKeywordStyleLine( props){
       <div className="keyword-styling-line">
           <Approach approachHandler={approachHandler} keywordStyling={keywordStyling} approach={approach}/>
       </div>
-      <div className="keyword-styling-line">
-          {highlight===true? 
+    
+  {highlight===true? 
+      <div className='facet-group-option'>
+        <div className="keyword-styling-line">
             <HighlightColorSelect 
               className='highlightColor' 
               highlightColorChangeHandler={highlightColorChangeHandler}
               highlightColor={highlightColor}
               highlightColorLabel={highlightColorLabel}  
             />
+        </div>
+      </div>        
             :
             ''}
-      </div>      
     </div>
-
     :''}
     </Fragment>
   )
