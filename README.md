@@ -1,4 +1,8 @@
-# Getting Started with Create React App
+# React Components of Vadosity.com Resume-Tailor webapp 
+
+The red arrows indicate how this project's artifacts fit into Resume-Tailor application architecture
+
+<img src="vadosity-react.drawio.png"></img>
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
