@@ -1,6 +1,6 @@
 # React Components
 
-The red arrows indicate how this project's build artifacts fit into Resume-Tailor application architecture
+The red arrows indicate how this project's build artifacts fit into the Resume-Tailor application architecture
 
 <img src="vadosity-react.drawio.png"></img>
 
